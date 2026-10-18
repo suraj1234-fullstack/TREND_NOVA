@@ -1,294 +1,118 @@
-.navbar {
-  width: 100%;
-  background-color: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  border-bottom: 1px solid #e5e7eb;
+/* --- लाइट मोड डिफ़ॉल्ट --- */
+body {
+  background-color: #F3F4F6;
+  color: #0F1111;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-.nav-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 20px;
-  height: 70px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* --- डार्क मोड (A to Z पूरी वेबसाइट) --- */
+body.dark-theme {
+  background-color: #121212 !important;
+  color: #E5E7EB !important;
 }
 
-/* Logo */
-.nav-logo {
-  font-size: 32px;
-  font-weight: 800;
-  text-decoration: none;
-  color: #111827;
-  letter-spacing: -0.5px;
+/* सभी बॉक्सेस और कंपोनेंट्स का बैकग्राउंड डार्क करें */
+body.dark-theme div, 
+body.dark-theme section, 
+body.dark-theme header, 
+body.dark-theme footer,
+body.dark-theme article {
+  background-color: inherit;
 }
 
-.logo-highlight {
-  color: #db2777;
+/* विशेष कार्ड्स, बैनर्स और नेव-बार को डार्क लुक दें */
+body.dark-theme .navbar,
+body.dark-theme .product-card,
+body.dark-theme .sidebar-filters,
+body.dark-theme .top-header-banner,
+body.dark-theme .amazonDealCardBlock {
+  background-color: #1F2937 !important;
+  color: #FFFFFF !important;
+  border-color: #374151 !important;
 }
 
-/* Desktop Links & Dropdown Container */
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+/* --- 1. नेव लिंक्स (Men, Women, आदि) का कलर हल्का और साफ (Light & Bright) करें --- */
+body.dark-theme .nav-link-btn,
+body.dark-theme .nav-link-btn span {
+  color: #F3F4F6 !important;
 }
 
-.nav-item-dropdown {
-  position: relative;
-  height: 70px;
-  display: flex;
-  align-items: center;
+body.dark-theme .nav-link-btn:hover, 
+body.dark-theme .nav-link-btn.active {
+  color: #F472B6 !important;
 }
 
-.nav-link-btn {
-  background: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #374151;
-  font-size: 17px;
-  font-weight: 100;
-  cursor: pointer;
-  padding: 0 4px;
-  transition: color 0.2s;
+/* सामान्य टेक्स्ट और हेडिंग्स को सफेद करें */
+body.dark-theme h1, 
+body.dark-theme h2, 
+body.dark-theme h3, 
+body.dark-theme h4, 
+body.dark-theme h5, 
+body.dark-theme h6, 
+body.dark-theme p, 
+body.dark-theme strong,
+body.dark-theme label {
+  color: #FFFFFF !important;
 }
 
-.nav-link-btn:hover, .nav-item-dropdown:hover .nav-link-btn {
-  color: #db2777;
+/* सामान्य लिंक्स */
+body.dark-theme a:not(.view-all-link):not(.mega-item-link) {
+  color: #FFFFFF !important;
 }
 
-.arrow-icon {
-  transition: transform 0.2s ease;
+body.dark-theme a:hover {
+  color: #F472B6 !important;
 }
 
-.arrow-icon.rotate {
-  transform: rotate(180deg);
+/* --- सर्च बार की समस्या का पक्का समाधान --- */
+body.dark-theme .search-group {
+  background-color: #374151 !important;
+  border-color: #4B5563 !important;
 }
 
-/* Dropdown Sub-menu Box */
-.dropdown-menu-box {
-  position: absolute;
-  top: 70px;
-  left: 0;
-  background-color: #ffffff;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
-  min-width: 200px;
-  z-index: 1100;
-  animation: fadeIn 0.2s ease-in-out;
+body.dark-theme .search-input-field {
+  background-color: transparent !important;
+  color: #FFFFFF !important;
+  outline: none !important;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+body.dark-theme .search-input-field::placeholder {
+  color: #9CA3AF !important;
 }
 
-.dropdown-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* --- 2. मोबाइल मेनू (थ्री-डॉट / हैमर्गर ड्रॉवर) फिक्स --- */
+body.dark-theme .mobile-menu.open {
+  background-color: #1F2937 !important;
+  color: #FFFFFF !important;
 }
 
-.dropdown-sub-item {
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-  text-decoration: none;
-  color: #4b5563;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 6px 10px;
-  border-radius: 4px;
-  transition: all 0.2s;
-  white-space: nowrap;
+body.dark-theme .mobile-toggle {
+  color: #FFFFFF !important;
 }
 
-.dropdown-sub-item:hover {
-  background-color: #fdf2f8;
-  color: #db2777;
-  padding-left: 14px;
+body.dark-theme .mobile-cat-title {
+  color: #F3F4F6 !important;
 }
 
-/* Right Side Actions */
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+body.dark-theme .mobile-sub-link {
+  background-color: #374151 !important;
+  color: #E5E7EB !important;
 }
 
-/* Search Box */
-.search-box {
-  position: relative;
-  display: flex;
-  align-items: center;
+body.dark-theme .mobile-sub-link.brand-sub-link {
+  background-color: #1E3A8A !important;
+  color: #93C5FD !important;
 }
 
-.search-input {
-  width: 200px;
-  background-color: #f3f4f6;
-  color: #1f2937;
-  font-size: 13px;
-  border: 1px solid rgb(224, 221, 221);
-  border-radius: 17px;
-  padding: 8px 36px 8px 12px;
-  outline: none;
-  transition: all 0.2s;
+body.dark-theme .mobile-search-always-bar {
+  background-color: #1F2937 !important;
+  border-bottom-color: #374151 !important;
 }
 
-.search-input:focus {
-  border-color: #db2777;
-  background-color: #ffffff;
-}
-
-.search-icon {
-  position: absolute;
-  right: 10px;
-  color: #9ca3af;
-  pointer-events: none;
-}
-
-/* Action Items (Sign In & Cart) */
-.action-item {
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  text-decoration: none;
-  color: #374151;
-  font-size: 15px;
-  font-weight: 100;
-  transition: color 0.2s;
-  border: 1px solid #d890b0;
-  padding: 5px;
-  border-radius: 10px;
-}
-
-.action-item:hover {
-  color: #db2777;
-}
-
-.cart-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.cart-badge {
-  position: absolute;
-  top: -6px;
-  right: -8px;
-  background-color: #db2777;
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 700;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Mobile Toggle Button */
-.mobile-toggle {
-  display: none;
-  background: #f3f4f6;
-  border: none;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #374151;
-}
-
-/* Mobile Dropdown */
-.mobile-menu {
-  display: none;
-  background-color: #ffffff;
-  border-top: 1px solid #e5e7eb;
-  padding: 16px;
-  max-height: calc(100vh - 70px);
-  overflow-y: auto;
-}
-
-.mobile-search {
-  width: 100%;
-  margin-bottom: 14px;
-}
-
-.mobile-search .search-input {
-  width: 100%;
-}
-
-.mobile-nav-links {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.mobile-category-block {
-  border-bottom: 1px solid #f3f4f6;
-  padding-bottom: 10px;
-}
-
-.mobile-cat-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 8px;
-}
-
-.mobile-sub-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-}
-
-.mobile-sub-link {
-  text-decoration: none;
-  color: #4b5563;
-  font-size: 13px;
-  padding: 6px 8px;
-  background-color: #f9fafb;
-  border-radius: 4px;
-}
-
-.mobile-sub-link:hover {
-  background-color: #fdf2f8;
-  color: #db2777;
-}
-
-.mobile-signin-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background-color: #db2777;
-  color: #ffffff;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 10px;
-  border-radius: 8px;
-  margin-top: 16px;
-}
-
-/* Responsive Media Query */
-@media (max-width: 1024px) {
-  .nav-links, .search-box, .action-item.signin-desktop {
-    display: none;
-  }
-
-  .mobile-toggle {
-    display: block;
-  }
-
-  .mobile-menu.open {
-    display: block;
-  }
+/* अन्य इनपुट और सेलेक्ट फील्ड्स */
+body.dark-theme select,
+body.dark-theme textarea {
+  background-color: #374151 !important;
+  color: #FFFFFF !important;
+  border-color: #4B5563 !important;
 }
