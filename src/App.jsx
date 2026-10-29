@@ -4,6 +4,7 @@ import Navbar from './components/navbar';
 import Herosection from './components/herosection';
 import SearchPage from './components/Searchpage';
 import Footersection from './components/footersection';
+import AIChatAssistant from './components/AIChatAssistant';
 
 const App = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -22,6 +23,8 @@ const App = () => {
       <div>
         {/* Navbar को darkMode और setDarkMode पास किया */}
         <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+        <AIChatAssistant/>
+
 
         <Routes>
           <Route path="/" element={<Herosection />} />

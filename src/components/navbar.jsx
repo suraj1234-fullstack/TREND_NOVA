@@ -1,12 +1,78 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Navbar = ({ darkMode, setDarkMode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeTab, setActiveTab] = useState('categories'); // 'categories' or 'brands'
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // --- VOICE SEARCH STATE ---
+  const [isListening, setIsListening] = useState(false);
+  
+  // --- SCROLL SHRINK STATE FOR SUB-BAR ---
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // --- DYNAMIC SCROLL BACKGROUND COLOR LOGIC (6 Colors) ---
+  const [navBg, setNavBg] = useState('#ffffff');
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Dynamic Theme Body Sync (Ensures Chat Assistant & Web Page stays perfectly themed)
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark');
+      document.documentElement.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+
+      // Scroll detect for hiding icons / shrinking bar
+      if (scrollY > 40) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+
+      if (scrollY > 2400) {
+        setNavBg('#fbcfe8'); // 6th Color (Footer ke paas): Soft Pink/Rose
+      } else if (scrollY > 1900) {
+        setNavBg('#fef6aa'); // 5th Color: Warm Peach / Orange
+      } else if (scrollY > 1400) {
+        setNavBg('#fef08a'); // 4th Color: Bright Lemon Yellow
+      } else if (scrollY > 900) {
+        setNavBg('#bbf7d0'); // 3rd Color: Clean Green
+      } else if (scrollY > 400) {
+        setNavBg('#bfdbfe'); // 2nd Color: Visible Blue
+      } else if (scrollY > 100) {
+        setNavBg('#e2e8f0'); // 1st Color: Light Slate Grey
+      } else {
+        setNavBg('#ffffff'); // Ekdum Top par: Clean White
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Flipkart Style Categories Data for the new bar below navbar
+  const subCategoriesList = [
+    { title: 'Fashion', icon: <i className="fa-solid fa-vest"></i>, link: '/search?q=fashion' },
+    { title: 'Mobiles', icon: <i className="fa-solid fa-mobile-screen-button"></i>, link: '/search?q=mobiles' },
+    { title: 'Electronics', icon: <i className="fa-solid fa-tv"></i>, link: '/search?q=electronics' },
+    { title: 'Beauty', icon: <i className="fa-solid fa-venus-double"></i>, link: '/search?q=beauty' },
+    { title: 'Home', icon: <i className="fa-solid fa-house-chimney"></i>, link: '/search?q=home' },
+    { title: 'Appliances', icon:<i className="fa-solid fa-bolt"></i>, link: '/search?q=appliances' },
+    { title: 'Toys', icon: <i className="fa-solid fa-cubes-stacked"></i>, link: '/search?q=toys' },
+    { title: 'Grocery', icon: <i className="fa-solid fa-basket-shopping"></i>, link: '/search?q=grocery' },
+    { title: 'Two Wheelers', icon:<i className="fa-solid fa-motorcycle"></i>, link: '/search?q=two-wheelers' }
+  ];
 
   const categoriesData = {
     Men: {
@@ -227,9 +293,55 @@ const Navbar = ({ darkMode, setDarkMode }) => {
     }
   };
 
+  // --- VOICE SEARCH HANDLER FUNCTION ---
+  const handleVoiceSearch = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Browser does not support voice recognition. Try using Chrome or Edge.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      const speechToText = event.results[0][0].transcript;
+      setSearchQuery(speechToText);
+      setIsListening(false);
+      
+      if (speechToText.trim()) {
+        navigate(`/search?q=${encodeURIComponent(speechToText.trim())}`);
+        setIsOpen(false);
+        setActiveDropdown(null);
+      }
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
   return (
     <>
-      <nav className="navbar">
+      <nav 
+        className="navbar" 
+        style={{ 
+          backgroundColor: navBg, 
+          transition: 'background-color 0.5s ease-in-out' 
+        }}
+      >
         <div className="nav-container">
           
           {/* Logo */}
@@ -302,7 +414,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                       ) : (
                         <div className="mega-grid-container brands-grid">
                           {categoriesData[catName].brands.map((group, idx) => (
-                            <div key={idx} className="mega-column">
+                            <div key5={idx} className="mega-column">
                               <h4 className="mega-group-title brand-title">{group.title}</h4>
                               <ul className="mega-item-list brand-list">
                                 {group.items.map((brand, brandIdx) => (
@@ -336,15 +448,27 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           {/* Right Action Icons & Search */}
           <div className="nav-actions">
             
-            {/* Desktop Search */}
+            {/* Desktop Search (Original width/min-width restored + Voice Speaker added) */}
             <form onSubmit={handleSearchSubmit} className="search-group desktop-search">
               <input
                 type="text"
-                placeholder="Search products"
+                placeholder="Search for Products, Brands and More"
                 className="search-input-field"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              
+              {/* VOICE SPEAKER BUTTON */}
+              <button 
+                type="button" 
+                onClick={handleVoiceSearch} 
+                className={`voice-search-btn ${isListening ? 'listening' : ''}`}
+                title="Search by Voice"
+                aria-label="Search by Voice"
+              >
+                <i class="fa-solid fa-microphone-lines"></i>
+              </button>
+
               <button type="submit" className="search-submit-btn" aria-label="Search">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -395,7 +519,13 @@ const Navbar = ({ darkMode, setDarkMode }) => {
         </div>
 
         {/* Mobile Search Row */}
-        <div className="mobile-search-always-bar">
+        <div 
+          className="mobile-search-always-bar"
+          style={{ 
+            backgroundColor: navBg, 
+            transition: 'background-color 0.5s ease-in-out' 
+          }}
+        >
           <form onSubmit={handleSearchSubmit} className="search-group mobile-always-search">
             <input
               type="text"
@@ -404,6 +534,16 @@ const Navbar = ({ darkMode, setDarkMode }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            
+            <button 
+              type="button" 
+              onClick={handleVoiceSearch} 
+              className={`voice-search-btn ${isListening ? 'listening' : ''}`}
+              title="Search by Voice"
+            >
+              <i className="fa-solid fa-microphone"></i>
+            </button>
+
             <button type="submit" className="search-submit-btn" aria-label="Search">
               <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -415,16 +555,6 @@ const Navbar = ({ darkMode, setDarkMode }) => {
         {/* Mobile Accordion Menu */}
         <div className={`mobile-menu ${isOpen ? 'open' : ''}`}>
           
-          {/* Mobile Theme Toggle Button inside menu */}
-          <div className="mobile-extra-controls">
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="theme-icon-btn mobile-theme-btn"
-            >
-              {darkMode ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}
-            </button>
-          </div>
-
           <div className="mobile-nav-links">
             {Object.keys(categoriesData).map((catName) => (
               <details key={catName} className="mobile-category-block">
@@ -478,18 +608,44 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             <span>Sign In </span>
           </a>
         </div>
+
+        {/* --- DYNAMIC SMART SUB-CATEGORIES BAR (COLLAPSES ON SCROLL) --- */}
+        {location.pathname === '/' && (
+          <div className={`sub-categories-bar ${darkMode ? 'dark-sub-bar' : ''} ${isScrolled ? 'scrolled-sub-bar' : ''}`}>
+            <div className="sub-categories-track">
+              {subCategoriesList.map((cat, index) => (
+                <a key={index} href={cat.link} className="sub-cat-item">
+                  <div className={`sub-cat-icon-box ${darkMode ? 'dark-icon-box' : ''}`}>
+                    <span className="sub-cat-emoji">{cat.icon}</span>
+                  </div>
+                  <span className={`sub-cat-name ${darkMode ? 'dark-text' : ''}`}>{cat.title}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </nav>
 
-      {/* Embedded Modern Styling */}
+      {/* Embedded Modern Styling (Original Widths Restored) */}
       <style>{`
         * { box-sizing: border-box; }
+        
+        /* Perfect Body Top Padding to avoid content overlap */
+        body {
+          padding-top: 80px; /* Desktop height */
+        }
+        @media (max-width: 980px) {
+          body {
+            padding-top: 125px; /* Mobile height */
+          }
+        }
+
         .navbar {
           position: fixed;
           top: 0;
           left: 0;
           right: 0;
           width: 100%;
-          background: #ffffff;
           color: #0f172a;
           box-shadow: 0 2px 14px rgba(15, 23, 42, 0.07);
           z-index: 1000;
@@ -498,9 +654,9 @@ const Navbar = ({ darkMode, setDarkMode }) => {
         .nav-container {
           width: 100%;
           max-width: 1600px;
-          min-height: 68px;
+          min-height: 60px;
           margin: 0 auto;
-          padding: 10px 28px;
+          padding: 6px 28px;
           display: flex;
           align-items: center;
           gap: 24px;
@@ -510,7 +666,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           align-items: center;
           flex: 0 0 auto;
           white-space: nowrap;
-          font-size: 23px;
+          font-size: 26px;
           line-height: 1;
           font-weight: 850;
           color: #111827;
@@ -547,7 +703,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           align-items: center;
           justify-content: center;
           gap: 5px;
-          min-height: 42px;
+          min-height: 38px;
           margin: 0;
           padding: 0 2px;
           border: 0;
@@ -568,7 +724,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
 
         .mega-dropdown-box {
           position: fixed;
-          top: 66px;
+          top: 60px;
           left: 50%;
           transform: translateX(-50%);
           width: min(92vw, 1360px);
@@ -681,15 +837,16 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           gap: 13px;
           white-space: nowrap;
         }
+        /* --- ORIGINAL USER SEARCH GROUP WIDTH RESTORED --- */
         .search-group {
           display: flex;
           align-items: center;
           gap: 8px;
-          width: 270px;
-          min-width: 0;
-          min-height: 42px;
+          width: 250px;
+          min-width: 500px;
+          min-height: 38px;
           padding: 4px 5px 4px 14px;
-          border: 1px solid #e2e8f0;
+          border: 1.2px solid #5cc0da;
           border-radius: 999px;
           background: #f8fafc;
           transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
@@ -699,7 +856,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           background: #fff;
           box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.10);
         }
-        .desktop-search { flex: 0 1 270px; }
+        .desktop-search { flex: 0 1 250px; }
         .search-input-field {
           width: 100%;
           min-width: 0;
@@ -709,24 +866,57 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           background: transparent;
           color: #0f172a;
           font-family: inherit;
-          font-size: 12.5px;
+          font-size: 12px;
           line-height: 1.4;
         }
         .search-input-field::placeholder { color: #94a3b8; }
+        
+        /* --- VOICE SEARCH STYLING --- */
+        .voice-search-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 28px;
+          height: 28px;
+          padding: 0;
+          border: none;
+          background: transparent;
+          color: #64748b;
+          font-size: 14px;
+          cursor: pointer;
+          transition: color 0.2s ease, transform 0.2s ease;
+          flex: 0 0 auto;
+        }
+        .voice-search-btn:hover {
+          color: #db2777;
+          transform: scale(1.1);
+        }
+        .voice-search-btn.listening {
+          color: #fff;
+          background-color: #dc2626;
+          border-radius: 50%;
+          animation: pulse-ring 1.5s infinite;
+        }
+        @keyframes pulse-ring {
+          0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+          70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+
         .search-submit-btn {
           display: inline-flex;
           flex: 0 0 auto;
           align-items: center;
           justify-content: center;
           gap: 5px;
-          min-height: 32px;
-          padding: 7px 12px;
+          min-height: 30px;
+          padding: 6px 10px;
           border: 0;
           border-radius: 999px;
           background: linear-gradient(135deg, #db2777, #be185d);
           color: #fff;
           font-family: inherit;
-          font-size: 11.5px;
+          font-size: 11px;
           line-height: 1;
           font-weight: 700;
           cursor: pointer;
@@ -739,14 +929,14 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           flex: 0 0 auto;
           align-items: center;
           justify-content: center;
-          width: 36px;
-          height: 36px;
+          width: 34px;
+          height: 34px;
           padding: 0;
           border: 1px solid #e2e8f0;
           border-radius: 50%;
           background: #f8fafc;
           color: #334155;
-          font-size: 17px;
+          font-size: 16px;
           line-height: 1;
           cursor: pointer;
           transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
@@ -760,9 +950,9 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           align-items: center;
           justify-content: center;
           gap: 6px;
-          min-height: 40px;
+          min-height: 38px;
           color: #334155;
-          font-size: 12.5px;
+          font-size: 12px;
           line-height: 1;
           font-weight: 650;
           text-decoration: none;
@@ -774,8 +964,8 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           position: absolute;
           top: 1px;
           right: -7px;
-          min-width: 16px;
-          padding: 2px 4px;
+          min-width: 15px;
+          padding: 2px 3px;
           border-radius: 999px;
           background: #db2777;
           color: #fff;
@@ -788,8 +978,8 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           display: none;
           align-items: center;
           justify-content: center;
-          width: 40px;
-          height: 40px;
+          width: 38px;
+          height: 38px;
           padding: 0;
           border: 1px solid #e2e8f0;
           border-radius: 10px;
@@ -799,12 +989,120 @@ const Navbar = ({ darkMode, setDarkMode }) => {
         }
         .mobile-menu { display: none; }
 
+        /* --- SMART SUB-CATEGORIES BAR (COLLAPSIBLE ON SCROLL) --- */
+        .sub-categories-bar {
+          width: 100%;
+          background: rgba(229, 235, 241, 0.85);
+          backdrop-filter: blur(8px);
+          padding: 15px 16px;
+          border-top: 1px solid rgba(226, 232, 240, 0.5);
+          border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+          overflow-x: auto;
+          white-space: nowrap;
+          scrollbar-width: none;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sub-categories-bar::-webkit-scrollbar {
+          display: none;
+        }
+        .sub-categories-track {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          max-width: 1400px;
+          margin: 0 auto;
+          gap: 10px;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sub-cat-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-decoration: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          flex: 1;
+          min-width: 60px;
+        }
+        .sub-cat-item:hover {
+          transform: translateY(-2px);
+        }
+        .sub-cat-icon-box {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.9);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 2px;
+          border: 1px solid rgba(226, 232, 240, 0.8);
+          opacity: 1;
+          transform: scale(1);
+          max-height: 40px;
+          overflow: hidden;
+          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sub-cat-emoji {
+          font-size: 14px;
+          transition: opacity 0.2s ease;
+        }
+        .sub-cat-name {
+          color: #334155;
+          font-size: 10.5px;
+          font-weight: 600;
+          font-family: inherit;
+          text-align: center;
+          transition: color 0.3s ease;
+        }
+
+        /* --- WHEN SCROLLED: SMOOTH ANIMATION HIDE ICONS --- */
+        .sub-categories-bar.scrolled-sub-bar {
+          padding: 3px 16px;
+          background: rgba(241, 245, 249, 0.6);
+        }
+        .sub-categories-bar.scrolled-sub-bar .sub-cat-icon-box {
+          opacity: 0;
+          transform: scale(0);
+          max-height: 0;
+          margin-bottom: 0;
+          border-width: 0;
+        }
+        .sub-categories-bar.scrolled-sub-bar .sub-cat-emoji {
+          opacity: 0;
+        }
+        .sub-categories-bar.scrolled-sub-bar .sub-cat-name {
+          font-size: 11px;
+          font-weight: 700;
+          color: #db2777;
+        }
+
+        /* Dark Mode Styles for Sub-Bar */
+        .sub-categories-bar.dark-sub-bar {
+          background: rgba(15, 23, 42, 0.85);
+          border-top: 1px solid rgba(51, 65, 85, 0.5);
+          border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+        }
+        .sub-categories-bar.dark-sub-bar.scrolled-sub-bar {
+          background: rgba(15, 23, 42, 0.4);
+        }
+        .dark-icon-box {
+          background: rgba(30, 41, 59, 0.9) !important;
+          border-color: rgba(51, 65, 85, 0.9) !important;
+        }
+        .dark-text {
+          color: #ffffff !important;
+        }
+        .sub-categories-bar.dark-sub-bar.scrolled-sub-bar .sub-cat-name {
+          color: #f472b6 !important;
+        }
+
         @media (max-width: 1320px) and (min-width: 981px) {
           .nav-container { gap: 18px; padding-right: 20px; padding-left: 20px; }
           .nav-links { gap: clamp(10px, 1.15vw, 16px); }
           .nav-link-btn { font-size: 12.5px; }
-          .search-group { width: 230px; }
-          .desktop-search { flex-basis: 230px; }
+          .search-group { width: 210px; }
+          .desktop-search { flex-basis: 210px; }
           .nav-actions { gap: 10px; }
           .signin-desktop span { display: none; }
         }
@@ -812,33 +1110,32 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           .nav-container { gap: 14px; padding-right: 16px; padding-left: 16px; }
           .nav-logo { font-size: 21px; }
           .nav-links { gap: 10px; }
-          .search-group { width: 195px; }
-          .desktop-search { flex-basis: 195px; }
+          .search-group { width: 175px; }
+          .desktop-search { flex-basis: 175px; }
           .search-submit-btn span { display: none; }
         }
 
         @media (max-width: 980px) {
-          .nav-container { min-height: 62px; padding: 10px 16px; gap: 12px; }
-          .nav-logo { font-size: 22px; }
+          .nav-container { min-height: 55px; padding: 8px 16px; gap: 10px; }
+          .nav-logo { font-size: 21px; }
           .nav-links, .desktop-search, .signin-desktop { display: none; }
-          .nav-actions { margin-left: auto; gap: 10px; }
-          .theme-icon-btn { width: 36px; height: 36px; }
+          .nav-actions { margin-left: auto; gap: 8px; }
+          .theme-icon-btn { width: 34px; height: 34px; }
           .mobile-toggle { display: inline-flex; }
           .mobile-search-always-bar {
             display: block;
-            padding: 0 14px 10px;
-            background: #fff;
+            padding: 0 14px 8px;
             border-bottom: 1px solid #f1f5f9;
           }
-          .mobile-always-search { width: 100%; min-height: 42px; }
-          .mobile-always-search .search-submit-btn { min-width: 34px; min-height: 32px; padding: 7px 10px; }
+          .mobile-always-search { width: 100%; min-height: 38px; min-width: 300px !important;}
+          .mobile-always-search .search-submit-btn { min-width: 32px; min-height: 30px; padding: 6px 8px; }
           .mobile-menu.open {
             display: block;
             position: fixed;
-            top: 113px;
+            top: 105px;
             left: 0;
             width: 100%;
-            height: calc(100dvh - 113px);
+            height: calc(100dvh - 105px);
             padding: 16px;
             overflow-y: auto;
             background: #fff;
@@ -862,17 +1159,17 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             font-weight: 650;
             gap: 8px;
           }
-          .mobile-category-block { padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+          .mobile-category-block { padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
           .mobile-cat-title {
             color: #0f172a;
-            font-size: 15px;
+            font-size: 14px;
             line-height: 1.4;
             font-weight: 750;
             cursor: pointer;
           }
-          .mobile-accordion-body { padding: 10px 0 4px; }
+          .mobile-accordion-body { padding: 8px 0 4px; }
           .mobile-sub-heading {
-            margin: 10px 0 8px;
+            margin: 8px 0 6px;
             color: #be185d;
             font-size: 11px;
             line-height: 1.4;
@@ -881,18 +1178,18 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             text-transform: uppercase;
           }
           .mobile-sub-heading.brand-heading { color: #0369a1; }
-          .mobile-group-box { margin-bottom: 12px; color: #334155; font-size: 12.5px; line-height: 1.45; }
-          .mobile-group-box strong { display: block; margin-bottom: 6px; font-size: 12.5px; font-weight: 700; }
-          .mobile-items-wrap { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 6px; }
+          .mobile-group-box { margin-bottom: 10px; color: #334155; font-size: 12px; line-height: 1.4; }
+          .mobile-group-box strong { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 700; }
+          .mobile-items-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
           .mobile-sub-link {
             display: inline-flex;
             align-items: center;
-            min-height: 29px;
-            padding: 5px 10px;
+            min-height: 27px;
+            padding: 4px 8px;
             border-radius: 999px;
             background: #f1f5f9;
             color: #475569;
-            font-size: 11.5px;
+            font-size: 11px;
             line-height: 1.25;
             text-decoration: none;
           }
@@ -903,28 +1200,33 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             justify-content: center;
             gap: 8px;
             width: 100%;
-            min-height: 46px;
-            margin-top: 22px;
-            padding: 12px 18px;
+            min-height: 44px;
+            margin-top: 18px;
+            padding: 10px 16px;
             box-sizing: border-box;
-            border-radius: 11px;
+            border-radius: 10px;
             background: linear-gradient(135deg, #db2777, #be185d);
             color: #fff !important;
-            font-size: 14px;
+            font-size: 13.5px;
             line-height: 1.2;
             font-weight: 750;
             text-decoration: none;
             box-shadow: 0 4px 12px rgba(219, 39, 119, 0.2);
           }
           .mega-dropdown-box { display: none; }
+          
+          .sub-categories-track {
+            justify-content: flex-start;
+            gap: 14px;
+          }
         }
         @media (max-width: 420px) {
           .nav-container { padding-right: 12px; padding-left: 12px; }
-          .nav-logo { font-size: 20px; }
-          .nav-actions { gap: 8px; }
-          .theme-icon-btn { width: 33px; height: 33px; }
-          .mobile-toggle { width: 37px; height: 37px; }
-          .mobile-menu.open { padding: 13px; }
+          .nav-logo { font-size: 19px; }
+          .nav-actions { gap: 6px; }
+          .theme-icon-btn { width: 32px; height: 32px; }
+          .mobile-toggle { width: 35px; height: 35px; }
+          .mobile-menu.open { padding: 12px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .navbar *, .navbar *::before, .navbar *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
