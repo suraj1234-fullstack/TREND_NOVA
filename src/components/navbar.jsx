@@ -345,7 +345,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
         <div className="nav-container">
           
           {/* Logo */}
-          <a href="/" className="nav-logo" aria-label="TrendNova home">
+          <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="nav-logo" aria-label="TrendNova home">
             <span className="logo-mark" aria-hidden="true">T</span>
             <span className="logo-wordmark">Trend<span className="logo-highlight">Nova</span></span>
           </a>
@@ -399,12 +399,16 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                               <ul className="mega-item-list">
                                 {group.items.map((item, itemIdx) => (
                                   <li key={itemIdx}>
-                                    <a 
-                                      href={`/search?q=${encodeURIComponent(item)}`}
+                                    <span 
+                                      onClick={() => {
+                                        navigate(`/search?q=${encodeURIComponent(item)}`);
+                                        setActiveDropdown(null);
+                                      }}
                                       className="mega-item-link"
+                                      style={{ cursor: 'pointer' }}
                                     >
                                       {item}
-                                    </a>
+                                    </span>
                                   </li>
                                 ))}
                               </ul>
@@ -414,17 +418,21 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                       ) : (
                         <div className="mega-grid-container brands-grid">
                           {categoriesData[catName].brands.map((group, idx) => (
-                            <div key5={idx} className="mega-column">
+                            <div key={idx} className="mega-column">
                               <h4 className="mega-group-title brand-title">{group.title}</h4>
                               <ul className="mega-item-list brand-list">
                                 {group.items.map((brand, brandIdx) => (
                                   <li key={brandIdx}>
-                                    <a 
-                                      href={`/search?q=${encodeURIComponent(brand)}`}
+                                    <span 
+                                      onClick={() => {
+                                        navigate(`/search?q=${encodeURIComponent(brand)}`);
+                                        setActiveDropdown(null);
+                                      }}
                                       className="mega-item-link brand-link"
+                                      style={{ cursor: 'pointer' }}
                                     >
                                       {brand}
-                                    </a>
+                                    </span>
                                   </li>
                                 ))}
                               </ul>
@@ -436,7 +444,16 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                     
                     <div className="mega-footer-bar">
                       <span>Explore complete {catName} collection with instant filter options.</span>
-                      <a href={`/search?q=${encodeURIComponent(catName)}`} className="view-all-link">View All {catName} →</a>
+                      <span 
+                        onClick={() => {
+                          navigate(`/search?q=${encodeURIComponent(catName)}`);
+                          setActiveDropdown(null);
+                        }} 
+                        className="view-all-link"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        View All {catName} →
+                      </span>
                     </div>
 
                   </div>
@@ -448,7 +465,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           {/* Right Action Icons & Search */}
           <div className="nav-actions">
             
-            {/* Desktop Search (Original width/min-width restored + Voice Speaker added) */}
+            {/* Desktop Search */}
             <form onSubmit={handleSearchSubmit} className="search-group desktop-search">
               <input
                 type="text"
@@ -466,7 +483,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                 title="Search by Voice"
                 aria-label="Search by Voice"
               >
-                <i class="fa-solid fa-microphone-lines"></i>
+                <i className="fa-solid fa-microphone"></i>
               </button>
 
               <button type="submit" className="search-submit-btn" aria-label="Search">
@@ -487,19 +504,19 @@ const Navbar = ({ darkMode, setDarkMode }) => {
               {darkMode ? '☀︎' : '⏾'}
             </button>
 
-            <a href="#signin" className="action-item signin-desktop">
+            <span onClick={() => navigate('/signin')} className="action-item signin-desktop" style={{ cursor: 'pointer' }}>
               <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <span>Sign In</span>
-            </a>
+            </span>
 
-            <a href="#cart" className="action-item cart-wrapper" title="View Cart">
+            <span onClick={() => navigate('/cart')} className="action-item cart-wrapper" title="View Cart" style={{ cursor: 'pointer' }}>
               <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               <span className="cart-badge">0</span>
-            </a>
+            </span>
 
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -567,14 +584,17 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                         <strong>{group.title}</strong>
                         <div className="mobile-items-wrap">
                           {group.items.slice(0, 6).map((item, itemIdx) => (
-                            <a 
+                            <span 
                               key={itemIdx} 
-                              href={`/search?q=${encodeURIComponent(item)}`}
-                              onClick={() => setIsOpen(false)}
+                              onClick={() => {
+                                navigate(`/search?q=${encodeURIComponent(item)}`);
+                                setIsOpen(false);
+                              }}
                               className="mobile-sub-link"
+                              style={{ cursor: 'pointer' }}
                             >
                               {item}
-                            </a>
+                            </span>
                           ))}
                         </div>
                       </div>
@@ -585,14 +605,17 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                     <div className="mobile-sub-heading brand-heading">Popular Brands</div>
                     <div className="mobile-items-wrap">
                       {categoriesData[catName].brands.flatMap(b => b.items).slice(0, 10).map((brand, bIdx) => (
-                        <a 
+                        <span 
                           key={bIdx}
-                          href={`/search?q=${encodeURIComponent(brand)}`}
-                          onClick={() => setIsOpen(false)}
+                          onClick={() => {
+                            navigate(`/search?q=${encodeURIComponent(brand)}`);
+                            setIsOpen(false);
+                          }}
                           className="mobile-sub-link brand-sub-link"
+                          style={{ cursor: 'pointer' }}
                         >
                           {brand}
-                        </a>
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -601,12 +624,12 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             ))}
           </div>
 
-          <a href="#signin" onClick={() => setIsOpen(false)} className="mobile-signin-btn">
+          <span onClick={() => { navigate('/signin'); setIsOpen(false); }} className="mobile-signin-btn" style={{ cursor: 'pointer', display: 'flex' }}>
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             <span>Sign In </span>
-          </a>
+          </span>
         </div>
 
         {/* --- DYNAMIC SMART SUB-CATEGORIES BAR (COLLAPSES ON SCROLL) --- */}
@@ -614,19 +637,19 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           <div className={`sub-categories-bar ${darkMode ? 'dark-sub-bar' : ''} ${isScrolled ? 'scrolled-sub-bar' : ''}`}>
             <div className="sub-categories-track">
               {subCategoriesList.map((cat, index) => (
-                <a key={index} href={cat.link} className="sub-cat-item">
+                <span key={index} onClick={() => navigate(cat.link)} className="sub-cat-item" style={{ cursor: 'pointer' }}>
                   <div className={`sub-cat-icon-box ${darkMode ? 'dark-icon-box' : ''}`}>
                     <span className="sub-cat-emoji">{cat.icon}</span>
                   </div>
                   <span className={`sub-cat-name ${darkMode ? 'dark-text' : ''}`}>{cat.title}</span>
-                </a>
+                </span>
               ))}
             </div>
           </div>
         )}
       </nav>
 
-      {/* Embedded Modern Styling (Original Widths Restored) */}
+      {/* Embedded Modern Styling */}
       <style>{`
         * { box-sizing: border-box; }
         
@@ -666,7 +689,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           align-items: center;
           flex: 0 0 auto;
           white-space: nowrap;
-          font-size: 26px;
+          font-size: 23px;
           line-height: 1;
           font-weight: 850;
           color: #111827;
@@ -837,7 +860,6 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           gap: 13px;
           white-space: nowrap;
         }
-        /* --- ORIGINAL USER SEARCH GROUP WIDTH RESTORED --- */
         .search-group {
           display: flex;
           align-items: center;
@@ -989,7 +1011,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
         }
         .mobile-menu { display: none; }
 
-        /* --- SMART SUB-CATEGORIES BAR (COLLAPSIBLE ON SCROLL) --- */
+        /* --- SMART SUB-CATEGORIES BAR (COLLAPSES ON SCROLL) --- */
         .sub-categories-bar {
           width: 100%;
           background: rgba(229, 235, 241, 0.85);
