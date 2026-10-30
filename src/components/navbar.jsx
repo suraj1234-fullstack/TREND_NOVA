@@ -18,6 +18,15 @@ const Navbar = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // --- GOOGLE SIGN-IN HANDLER ---
+  const handleGoogleSignIn = () => {
+    // सीधा बैकएंड के गूगल ऑथ राउट पर रीडायरेक्ट करेगा
+    window.location.href = 'https://trend-nova-product-api-2.onrender.com/auth/google';
+  };
+
+  
+  
+
   // Dynamic Theme Body Sync (Ensures Chat Assistant & Web Page stays perfectly themed)
   useEffect(() => {
     if (darkMode) {
@@ -483,7 +492,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                 title="Search by Voice"
                 aria-label="Search by Voice"
               >
-                <i className="fa-solid fa-microphone"></i>
+                <i className="fa-solid fa-microphone-lines"></i>
               </button>
 
               <button type="submit" className="search-submit-btn" aria-label="Search">
@@ -504,7 +513,8 @@ const Navbar = ({ darkMode, setDarkMode }) => {
               {darkMode ? '☀︎' : '⏾'}
             </button>
 
-            <span onClick={() => navigate('/signin')} className="action-item signin-desktop" style={{ cursor: 'pointer' }}>
+            {/* --- GOOGLE SIGN-IN DESKTOP BUTTON --- */}
+            <span onClick={handleGoogleSignIn} className="action-item signin-desktop" style={{ cursor: 'pointer' }}>
               <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
@@ -624,11 +634,12 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             ))}
           </div>
 
-          <span onClick={() => { navigate('/signin'); setIsOpen(false); }} className="mobile-signin-btn" style={{ cursor: 'pointer', display: 'flex' }}>
+          {/* --- GOOGLE SIGN-IN MOBILE BUTTON --- */}
+          <span onClick={handleGoogleSignIn} className="mobile-signin-btn" style={{ cursor: 'pointer', display: 'flex' }}>
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <span>Sign In </span>
+            <span>Sign In with Google</span>
           </span>
         </div>
 
@@ -653,13 +664,12 @@ const Navbar = ({ darkMode, setDarkMode }) => {
       <style>{`
         * { box-sizing: border-box; }
         
-        /* Perfect Body Top Padding to avoid content overlap */
         body {
-          padding-top: 80px; /* Desktop height */
+          padding-top: 80px;
         }
         @media (max-width: 980px) {
           body {
-            padding-top: 125px; /* Mobile height */
+            padding-top: 125px;
           }
         }
 
@@ -893,7 +903,6 @@ const Navbar = ({ darkMode, setDarkMode }) => {
         }
         .search-input-field::placeholder { color: #94a3b8; }
         
-        /* --- VOICE SEARCH STYLING --- */
         .voice-search-btn {
           display: inline-flex;
           align-items: center;
@@ -1011,10 +1020,9 @@ const Navbar = ({ darkMode, setDarkMode }) => {
         }
         .mobile-menu { display: none; }
 
-        /* --- SMART SUB-CATEGORIES BAR (COLLAPSES ON SCROLL) --- */
         .sub-categories-bar {
           width: 100%;
-          background: rgba(229, 235, 241, 0.85);
+          background: rgba(225, 184, 233, 0.7);
           backdrop-filter: blur(8px);
           padding: 15px 16px;
           border-top: 1px solid rgba(226, 232, 240, 0.5);
@@ -1078,7 +1086,6 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           transition: color 0.3s ease;
         }
 
-        /* --- WHEN SCROLLED: SMOOTH ANIMATION HIDE ICONS --- */
         .sub-categories-bar.scrolled-sub-bar {
           padding: 3px 16px;
           background: rgba(241, 245, 249, 0.6);
@@ -1099,7 +1106,6 @@ const Navbar = ({ darkMode, setDarkMode }) => {
           color: #db2777;
         }
 
-        /* Dark Mode Styles for Sub-Bar */
         .sub-categories-bar.dark-sub-bar {
           background: rgba(15, 23, 42, 0.85);
           border-top: 1px solid rgba(51, 65, 85, 0.5);
