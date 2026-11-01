@@ -318,6 +318,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
       setSearchQuery('');
     }
   };
+  
 
   // --- VOICE SEARCH HANDLER FUNCTION ---
   const handleVoiceSearch = () => {
@@ -369,6 +370,8 @@ const [token, setToken] = useState(localStorage.getItem('token'));
         }}
       >
         <div className="nav-container">
+
+  
           
           {/* Logo */}
           <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="nav-logo" aria-label="TrendNova home">
@@ -525,30 +528,44 @@ const [token, setToken] = useState(localStorage.getItem('token'));
               onClick={() => setDarkMode(!darkMode)}
               className="theme-icon-btn"
               title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              aria-label="Toggle Theme"
+              aria-label="Toggle Theme" 
+              style ={{
+         backgroundColor: darkMode ? '#1e293b' : '#fee2e2',
+          color: darkMode ? '#fafafa' : '#dc2626'}}
             >
-              {darkMode ? '☀︎' : '⏾'}
+              {darkMode ? <i class="fa-regular fa-moon"></i> : <i class="fa-solid fa-moon"></i>}
             </button>
             {/* --- SIGN IN / PROFILE CONDITION --- */}
 {token ? (
   <div className="user-profile-container" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
     
     {/* यूजर का लोगो / आइकन */}
-    <span className="user-avatar" style={{ background: '#4f46e5', color: '#fff', borderRadius: '50%', padding: '6px 10px', fontWeight: 'bold' }}>
-      👤
-    </span>
+    
 
     {/* अगर यूजर एडमिन है, तो एडमिन पैनल का लिंक दिखेगा */}
     {role === 'admin' && (
-      <Link to= "/admin-dashboard">
-      <a  className="admin-link" style={{ color: '#dc2626', fontWeight: 'bold', textDecoration: 'none' }}>
-        Admin
-      </a>
+      <Link to= "/admin-dashboard"
+        className="admin-link"
+        style={{  
+         
+         
+          textDecoration: 'none', 
+          padding:'5px',
+          backgroundColor: darkMode ? '#1e293b' : '#fee2e2',
+          color: darkMode ? '#ee4ea1' : '#dc2626',
+          borderRadius:'20px',
+          fontWeight:'600',
+          border:'1px solid #c9bdbd'
+         
+         
+        }}
+        >
+       <i class="fa-solid fa-unlock"></i>
       </Link>
     )}
 
     {/* लॉगआउट बटन */}
-    <button onClick={handleLogout} className="logout-btn" style={{ padding: '5px 10px', background: '#333', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
+    <button onClick={handleLogout} className="logout-btn" style={{ padding: '5px 10px', background: darkMode ? '#e62488' : '#4f42c2', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
       Logout
     </button>
 
@@ -558,7 +575,9 @@ const [token, setToken] = useState(localStorage.getItem('token'));
     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
     </svg>
-    <span>Sign In</span>
+    <span style={{
+      color : darkMode ? '#4861cf' : 'black'
+    }}>Sign In</span>
   </span>
 )}
 
@@ -683,13 +702,78 @@ const [token, setToken] = useState(localStorage.getItem('token'));
             ))}
           </div>
 
-          {/* --- GOOGLE SIGN-IN MOBILE BUTTON --- */}
+          {/* --- GOOGLE SIGN-IN OR USER PROFILE MOBILE BUTTONS --- */}
+{token ? (
+  <div style={{ marginTop: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    {role === 'admin' && (
+      <Link 
+        to="/admin-dashboard" 
+        onClick={() => setIsOpen(false)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          width: '100%',
+          minHeight: '44px',
+          padding: '10px 16px',
+          borderRadius: '10px',
+          backgroundColor: '#4e4545',
+          color: '#ffffff',
+          fontSize: '13.5px',
+          fontWeight: '750',
+          textDecoration: 'none',
+          boxShadow: '0 2px 5px rgba(220, 38, 38, 0.15)'
+        }}
+      >
+        <i className="fa-solid fa-unlock"></i>
+        <span>Admin Dashboard</span>
+      </Link>
+    )}
+
+    <button 
+      onClick={() => {
+        setIsOpen(false);
+        handleLogout();
+      }} 
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        width: '100%',
+        minHeight: '44px',
+        padding: '10px 16px',
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+        border: 'none',
+        fontSize: '13.5px',
+        fontWeight: '750',
+        cursor: 'pointer',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+      }}
+    >
+      <i className="fa-solid fa-right-from-bracket"></i>
+      <span>Logout</span>
+    </button>
+  </div>
+) : (
+  <span onClick={handleGoogleSignIn} className="mobile-signin-btn" style={{ cursor: 'pointer', display: 'flex' }}>
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+    <span>Sign In with Google</span>
+  </span>
+)}
+
+          {/* --- GOOGLE SIGN-IN MOBILE BUTTON ---
           <span onClick={handleGoogleSignIn} className="mobile-signin-btn" style={{ cursor: 'pointer', display: 'flex' }}>
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             <span>Sign In with Google</span>
-          </span>
+          </span> */}
         </div>
 
         {/* --- DYNAMIC SMART SUB-CATEGORIES BAR (COLLAPSES ON SCROLL) --- */}
@@ -1173,6 +1257,13 @@ const [token, setToken] = useState(localStorage.getItem('token'));
         .sub-categories-bar.dark-sub-bar.scrolled-sub-bar .sub-cat-name {
           color: #f472b6 !important;
         }
+          @media (max-width: 980px) {
+ 
+  .signin-desktop, 
+  .user-profile-container { 
+    display: none !important; 
+  }
+}
 
         @media (max-width: 1320px) and (min-width: 981px) {
           .nav-container { gap: 18px; padding-right: 20px; padding-left: 20px; }
@@ -1181,7 +1272,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
           .search-group { width: 210px; }
           .desktop-search { flex-basis: 210px; }
           .nav-actions { gap: 10px; }
-          .signin-desktop span { display: none; }
+          . { display: none; }
         }
         @media (max-width: 1080px) and (min-width: 981px) {
           .nav-container { gap: 14px; padding-right: 16px; padding-left: 16px; }

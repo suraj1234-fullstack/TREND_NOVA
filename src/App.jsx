@@ -6,8 +6,24 @@ import SearchPage from './components/Searchpage';
 import Footersection from './components/footersection';
 import AIChatAssistant from './components/AIChatAssistant';
 import AdminDashboard from './adminDashboard';
+import { Navigate } from 'react-router-dom';
+ const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+
+  // Agar token nahi hai ya role 'admin' nahi hai, toh home page par bhej do
+  if (!token || role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+
+  // Agar admin hai, toh dashboard dikhao
+  return children;
+};
 
 const App = () => {
+   
+
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
@@ -36,7 +52,7 @@ const App = () => {
     <Router>
       <Routes>
         {/* 1. Admin Dashboard - Bilkul alag aur saaf page, koi navbar/footer nahi */}
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
 
         {/* 2. Baaki saare pages - Jinke sath Navbar aur Footer dikhenge */}
         <Route path="/*" element={
@@ -58,6 +74,8 @@ const App = () => {
 };
 
 export default App;
+
+
 
 
 
