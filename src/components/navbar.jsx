@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import AdminDashboard from '../adminDashboard';
+import { Link } from 'react-router-dom';
 
 const Navbar = ({ darkMode, setDarkMode }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,11 +20,26 @@ const Navbar = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // --- GOOGLE SIGN-IN HANDLER ---
   const handleGoogleSignIn = () => {
     // सीधा बैकएंड के गूगल ऑथ राउट पर रीडायरेक्ट करेगा
     window.location.href = 'https://auth-api-gtqf.onrender.com/api/auth/google';
   };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = '/';
+  };
+const [token, setToken] = useState(localStorage.getItem('token'));
+  const [role, setRole] = useState(localStorage.getItem('role'));
+
+  useEffect(() => {
+    const handleStorage = () => {
+      setToken(localStorage.getItem('token'));
+      setRole(localStorage.getItem('role'));
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   
   
@@ -512,14 +529,46 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             >
               {darkMode ? '☀︎' : '⏾'}
             </button>
+            {/* --- SIGN IN / PROFILE CONDITION --- */}
+{token ? (
+  <div className="user-profile-container" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+    
+    {/* यूजर का लोगो / आइकन */}
+    <span className="user-avatar" style={{ background: '#4f46e5', color: '#fff', borderRadius: '50%', padding: '6px 10px', fontWeight: 'bold' }}>
+      👤
+    </span>
 
-            {/* --- GOOGLE SIGN-IN DESKTOP BUTTON --- */}
+    {/* अगर यूजर एडमिन है, तो एडमिन पैनल का लिंक दिखेगा */}
+    {role === 'admin' && (
+      <Link to= "/admin-dashboard">
+      <a  className="admin-link" style={{ color: '#dc2626', fontWeight: 'bold', textDecoration: 'none' }}>
+        Admin
+      </a>
+      </Link>
+    )}
+
+    {/* लॉगआउट बटन */}
+    <button onClick={handleLogout} className="logout-btn" style={{ padding: '5px 10px', background: '#333', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
+      Logout
+    </button>
+
+  </div>
+) : (
+  <span onClick={handleGoogleSignIn} className="action-item signin-desktop" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+    <span>Sign In</span>
+  </span>
+)}
+
+            {/* --- GOOGLE SIGN-IN DESKTOP BUTTON ---
             <span onClick={handleGoogleSignIn} className="action-item signin-desktop" style={{ cursor: 'pointer' }}>
               <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <span>Sign In</span>
-            </span>
+            </span> */}
 
             <span onClick={() => navigate('/cart')} className="action-item cart-wrapper" title="View Cart" style={{ cursor: 'pointer' }}>
               <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
