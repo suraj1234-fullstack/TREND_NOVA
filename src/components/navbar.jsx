@@ -21,7 +21,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
   // --- GOOGLE SIGN-IN HANDLER ---
   const handleGoogleSignIn = () => {
     // सीधा बैकएंड के गूगल ऑथ राउट पर रीडायरेक्ट करेगा
-    window.location.href = 'https://trend-nova-product-api-2.onrender.com/auth/google';
+    window.location.href = 'https://auth-api-gtqf.onrender.com/api/auth/google';
   };
 
   
