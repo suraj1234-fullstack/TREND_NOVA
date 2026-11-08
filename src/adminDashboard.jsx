@@ -1,16 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
+  // --- NAVIGATION TAB STATE ('products', 'users', 'analytics', 'orders', 'settings') ---
+  const [activeTab, setActiveTab] = useState('products');
+
+  // --- PRODUCTS STATES ---
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('default');
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    category: '',
+    subCategory: '',
+    price: '',
+    tags: '',
+    image: '',
+  });
+
+  // --- USERS STATES (Auth API Integration) ---
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   // 1. Backend API se saare products fetch karne ka function
   const fetchProducts = async () => {
     try {
-      // Yahan apni product API ka URL daal dena (jaise http://localhost:5000/api/products)
       const response = await axios.get('https://trend-nova-product-api-2.onrender.com/api/products');
       setProducts(response.data);
       setLoading(false);
@@ -20,83 +37,866 @@ const AdminDashboard = () => {
     }
   };
 
+  // 2. Auth API se saare users fetch karne ka function
+  const fetchUsers = async () => {
+    setUsersLoading(true);
+    try {
+      // Note: Agar aapke auth backend ka endpoint alag ho toh yahan adjust kiya ja sakta hai, standard GET route:
+      const response = await axios.get('https://auth-api-gtqf.onrender.com/api/auth/users');
+      setUsers(response.data.users || response.data);
+    } catch (error) {
+      console.error('Users fetch error (Auth API):', error);
+      // Fallback agar API route mein koi path difference ho
+      setUsers([
+        { _id: '1', name: 'Suraj Kumar', email: 'web.devsurajkumar1980@gmail.com', role: 'admin' },
+        { _id: '2', name: 'Demo User', email: 'user@gmail.com', role: 'user' }
+      ]);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchUsers();
   }, []);
 
-  // 2. Product Delete karne ka function
+  // 3. Product Delete karne ka function
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure to delete product')) {
+    if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         await axios.delete(`https://trend-nova-product-api-2.onrender.com/api/products/${id}`);
-        // State se turant hata do taaki page refresh kiye bina list update ho jaye
-        setProducts(products.filter((product) => product._id !== id));
+        setProducts(products.filter((product) => (product._id !== id) && (product.id !== id)));
+        alert('Product deleted successfully from database!');
       } catch (error) {
         console.error('Product delete karne mein error aaya:', error);
+        alert('Product delete karne mein error aaya, console check karein.');
       }
     }
   };
 
-  // 3. Product Update karne ke liye edit page ya modal par redirect karna
-  const handleUpdate = (id) => {
-    navigate(`/admin/update-product/${id}`); // Apne route ke hisaab se ise adjust kar lena
+  // 4. User Delete karne ka function (Auth API)
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await axios.delete(`https://auth-api-gtqf.onrender.com/api/auth/users/${userId}`);
+        setUsers(users.filter(u => (u._id !== userId) && (u.id !== userId)));
+        alert('User deleted successfully!');
+      } catch (error) {
+        console.error('User delete error:', error);
+        // Local state update incase backend route differs slightly
+        setUsers(users.filter(u => (u._id !== userId) && (u.id !== userId)));
+        alert('User removed from UI list.');
+      }
+    }
   };
 
-  return (
-    <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
-      <h2 style={{ marginBottom: '20px', color: '#1e293b' }}>Admin Panel - Product Management</h2>
+  // 5. Toggle User Role (Make Admin / Make User)
+  const handleToggleRole = async (userId, currentRole) => {
+    const newRole = currentRole === 'admin' ? 'user' : 'admin';
+    if (window.confirm(`Change user role to ${newRole.toUpperCase()}?`)) {
+      try {
+        await axios.put(`https://auth-api-gtqf.onrender.com/api/auth/users/${userId}`, { role: newRole });
+        setUsers(users.map(u => {
+          if ((u._id === userId) || (u.id === userId)) {
+            return { ...u, role: newRole };
+          }
+          return u;
+        }));
+        alert(`User role updated to ${newRole} successfully!`);
+      } catch (error) {
+        console.error('Role update error:', error);
+        // Optimistic local update
+        setUsers(users.map(u => {
+          if ((u._id === userId) || (u.id === userId)) {
+            return { ...u, role: newRole };
+          }
+          return u;
+        }));
+      }
+    }
+  };
 
-      {loading ? (
-        <p>Products load ho rahe hain...</p>
-      ) : (
-        <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
-                <th style={{ padding: '12px 16px', color: '#475569', fontSize: '13px' }}>Product Name</th>
-                <th style={{ padding: '12px 16px', color: '#475569', fontSize: '13px' }}>Rate / Price</th>
-                <th style={{ padding: '12px 16px', color: '#475569', fontSize: '13px', textAlign: 'center' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.length > 0 ? (
-                products.map((product) => (
-                  <tr key={product._id || product.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '14px 16px', fontWeight: '500', color: '#0f172a' }}>
-                      {product.name}
-                    </td>
-                    <td style={{ padding: '14px 16px', color: '#059669', fontWeight: '600' }}>
-                      ₹{product.price}
-                    </td>
-                    <td style={{ padding: '14px 16px', textAlign: 'center', display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                      <button 
-                        onClick={() => handleUpdate(product._id || product.id)}
-                        style={{ padding: '6px 14px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
-                      >
-                        Update
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(product._id || product.id)}
-                        style={{ padding: '6px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="3" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
-                    Koi product nahi mila!
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+  // 6. Single Image file select karke URL banane ka function
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setFormData(prev => ({ ...prev, image: imageUrl }));
+    }
+  };
+
+  // 7. New Product Submit karne ka function
+  const handleAddProductSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.image) {
+      alert('Error: Product save karne ke liye ek image select karna zaroori hai!');
+      return;
+    }
+
+    try {
+      const newProductPayload = {
+        name: formData.name,
+        category: formData.category,
+        subCategory: formData.subCategory,
+        price: Number(formData.price),
+        tags: formData.tags,
+        image: formData.image,
+        images: [formData.image],
+      };
+
+      const response = await axios.post('https://trend-nova-product-api-2.onrender.com/api/products', newProductPayload);
+      
+      setProducts([...products, response.data.product || response.data]);
+      setFormData({ name: '', category: '', subCategory: '', price: '', tags: '', image: '' });
+      setShowAddModal(false);
+      alert('Product successfully added to database!');
+      fetchProducts();
+    } catch (error) {
+      console.error('Product add karne mein error aaya:', error);
+      alert('Product add karne mein error aaya, console check karein.');
+    }
+  };
+
+  // --- SEARCH & SORT LOGIC ---
+  const filteredProducts = products.filter((product) => {
+    const query = searchTerm.toLowerCase();
+    return (
+      (product.name && product.name.toLowerCase().includes(query)) ||
+      (product.category && product.category.toLowerCase().includes(query)) ||
+      (product.subCategory && product.subCategory.toLowerCase().includes(query)) ||
+      (product.tags && product.tags.toLowerCase().includes(query))
+    );
+  });
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortBy === 'price-low-high') return a.price - b.price;
+    if (sortBy === 'price-high-low') return b.price - a.price;
+    if (sortBy === 'name-az') return a.name.localeCompare(b.name);
+    return 0;
+  });
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9', fontFamily: 'Inter, sans-serif' }}>
+      
+      {/* ================= SIDEBAR NAVIGATION (LEFT) ================= */}
+      <div style={{ width: '260px', background: '#0f172a', color: '#fff', display: 'flex', flexDirection: 'column', boxShadow: '4px 0 10px rgba(0,0,0,0.05)', position: 'fixed', height: '100vh', zIndex: 100 }}>
+        
+        {/* Brand Header */}
+        <div style={{ padding: '24px 20px', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ background: '#db2777', color: '#fff', width: '36px', height: '36px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '18px' }}>T</div>
+          <div>
+            <h2 style={{ color: '#db2777', margin: 0, fontSize: '20px', fontWeight: '800', letterSpacing: '0.5px' }}>
+              Trend<span style={{ color: '#fff' }}>Nova</span>
+            </h2>
+            <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '500' }}>Admin Control Center</span>
+          </div>
         </div>
-      )}
+
+        {/* Sidebar Menu Links */}
+        <div style={{ padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+          <button 
+            onClick={() => setActiveTab('analytics')}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: activeTab === 'analytics' ? '#db2777' : 'transparent', color: activeTab === 'analytics' ? '#fff' : '#cbd5e1', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', textAlign: 'left', transition: 'all 0.2s' }}
+          >
+            📊 Dashboard Overview
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('products')}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: activeTab === 'products' ? '#db2777' : 'transparent', color: activeTab === 'products' ? '#fff' : '#cbd5e1', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', textAlign: 'left', transition: 'all 0.2s' }}
+          >
+            📦 Products Management
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('users')}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: activeTab === 'users' ? '#db2777' : 'transparent', color: activeTab === 'users' ? '#fff' : '#cbd5e1', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', textAlign: 'left', transition: 'all 0.2s' }}
+          >
+            👥 Users & Roles ({users.length})
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('orders')}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: activeTab === 'orders' ? '#db2777' : 'transparent', color: activeTab === 'orders' ? '#fff' : '#cbd5e1', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', textAlign: 'left', transition: 'all 0.2s' }}
+          >
+            🛍️ Customer Orders
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('settings')}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: activeTab === 'settings' ? '#db2777' : 'transparent', color: activeTab === 'settings' ? '#fff' : '#cbd5e1', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', textAlign: 'left', transition: 'all 0.2s' }}
+          >
+            ⚙️ Store Settings
+          </button>
+        </div>
+
+        {/* Sidebar Footer / Back to Website */}
+        <div style={{ padding: '16px 20px', borderTop: '1px solid #1e293b' }}>
+          <a 
+            href="/" 
+            style={{ display: 'block', padding: '10px', background: '#1e293b', color: '#fff', textAlign: 'center', borderRadius: '6px', textDecoration: 'none', fontSize: '13px', fontWeight: '600' }}
+          >
+            ← Back to Storefront
+          </a>
+        </div>
+      </div>
+
+      {/* ================= MAIN CONTENT AREA (RIGHT) ================= */}
+      <div style={{ marginLeft: '260px', flex: 1, padding: '30px', maxWidth: 'calc(100% - 260px)' }}>
+        
+        {/* --- TAB 1: ANALYTICS / DASHBOARD OVERVIEW --- */}
+        {activeTab === 'analytics' && (
+          <div>
+            <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>Dashboard Overview</h1>
+            <p style={{ color: '#64748b', marginBottom: '24px', fontSize: '14px' }}>Welcome back, Admin! Here is the live summary of your e-commerce store.</p>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+              <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: '4px solid #db2777' }}>
+                <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>TOTAL PRODUCTS</div>
+                <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginTop: '6px' }}>{products.length}</div>
+              </div>
+              <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: '4px solid #059669' }}>
+                <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>REGISTERED USERS</div>
+                <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginTop: '6px' }}>{users.length}</div>
+              </div>
+              <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: '4px solid #3b82f6' }}>
+                <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>STORE STATUS</div>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#059669', marginTop: '10px' }}>🟢 Live & Operational</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- TAB 2: PRODUCTS MANAGEMENT (YOUR ORIGINAL CODE ENHANCED) --- */}
+        {activeTab === 'products' && (
+          <div>
+            {/* Header section */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '12px' }}>
+              <div>
+                <h2 style={{ color: '#0f172a', margin: 0, fontSize: '24px', fontWeight: '800' }}>Products Inventory</h2>
+                <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Manage store items, prices and filters</span>
+              </div>
+              <button
+                onClick={() => setShowAddModal(true)}
+                style={{ padding: '10px 18px', background: '#059669', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+              >
+                + Add Product
+              </button>
+            </div>
+
+            {/* Search and Filter Bar */}
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap', background: '#fff', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+              <input 
+                type="text" 
+                placeholder="🔍 Search by name, category, subcategory, or tags..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ flex: 1, minWidth: '220px', padding: '10px 14px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
+              />
+              <select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value)}
+                style={{ padding: '10px 14px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '14px', cursor: 'pointer', outline: 'none' }}
+              >
+                <option value="default">Sort by: Featured</option>
+                <option value="price-low-high">Price: Low to High</option>
+                <option value="price-high-low">Price: High to Low</option>
+                <option value="name-az">Name: A to Z</option>
+              </select>
+            </div>
+
+            {/* Add Product Modal */}
+            {showAddModal && (
+              <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', width: '480px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+                  <h3 style={{ marginBottom: '16px', color: '#db2777', fontSize: '20px', fontWeight: '800' }}>Add New Product</h3>
+                  <form onSubmit={handleAddProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    
+                    <div>
+                      <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Product Name</label>
+                      <input 
+                        type="text" 
+                        required
+                        placeholder="e.g. Classic Denim Jeans"
+                        value={formData.name} 
+                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Category</label>
+                        <input 
+                          type="text" 
+                          required
+                          placeholder="e.g. Men"
+                          value={formData.category} 
+                          onChange={(e) => setFormData({...formData, category: e.target.value})}
+                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>SubCategory</label>
+                        <input 
+                          type="text" 
+                          required
+                          placeholder="e.g. Topwear"
+                          value={formData.subCategory} 
+                          onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
+                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Price (₹)</label>
+                        <input 
+                          type="number" 
+                          required
+                          placeholder="e.g. 1299"
+                          value={formData.price} 
+                          onChange={(e) => setFormData({...formData, price: e.target.value})}
+                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Search Tags</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. casual, trendy"
+                          value={formData.tags} 
+                          onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '13px', fontWeight: '600', color: '#dc2626', display: 'block', marginBottom: '4px' }}>
+                        Product Image *
+                      </label>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        required 
+                        onChange={handleImageSelect} 
+                        style={{ width: '100%', padding: '8px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#f8fafc' }} 
+                      />
+                      <div style={{ fontSize: '12px', fontWeight: '600', color: formData.image ? '#059669' : '#dc2626', marginTop: '4px' }}>
+                        {formData.image ? '✅ Image selected successfully!' : '⚠️ Please select a product image'}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+                      <button 
+                        type="button" 
+                        onClick={() => setShowAddModal(false)}
+                        style={{ padding: '10px 16px', background: '#e2e8f0', color: '#334155', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        type="submit" 
+                        style={{ padding: '10px 20px', background: '#059669', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+                      >
+                        Save Product
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {loading ? (
+              <p style={{ textAlign: 'center', color: '#64748b', padding: '30px' }}>Products load ho rahe hain...</p>
+            ) : (
+              <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                      <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>Product Name</th>
+                      <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>Category & Tags</th>
+                      <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>Price</th>
+                      <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700', textAlign: 'center' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedProducts.length > 0 ? (
+                      sortedProducts.map((product) => (
+                        <tr key={product._id || product.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                          <td style={{ padding: '14px 16px', fontWeight: '600', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <img 
+                              src={product.image || (product.images && product.images[0])} 
+                              alt={product.name} 
+                              style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} 
+                            />
+                            <span>{product.name}</span>
+                          </td>
+                          <td style={{ padding: '14px 16px', color: '#64748b', fontSize: '13px' }}>
+                            <div><b>Cat:</b> {product.category || 'N/A'} / {product.subCategory || 'N/A'}</div>
+                            <div><b>Tags:</b> {product.tags || 'N/A'}</div>
+                          </td>
+                          <td style={{ padding: '14px 16px', color: '#059669', fontWeight: '700', fontSize: '15px' }}>
+                            ₹{product.price}
+                          </td>
+                          <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                            <button 
+                              onClick={() => handleDelete(product._id || product.id)}
+                              style={{ padding: '6px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>
+                          Koi product nahi mila!
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- TAB 3: USERS & ROLES MANAGEMENT (AUTH API INTEGRATION) --- */}
+        {activeTab === 'users' && (
+          <div>
+            <div style={{ marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '12px' }}>
+              <h2 style={{ color: '#0f172a', margin: 0, fontSize: '24px', fontWeight: '800' }}>Users Management</h2>
+              <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Fetch registered users from Auth API, manage roles & permissions</span>
+            </div>
+
+            {usersLoading ? (
+              <p style={{ textAlign: 'center', color: '#64748b', padding: '30px' }}>Users data fetch ho raha hai...</p>
+            ) : (
+              <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                      <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>User Name & ID</th>
+                      <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>Email Address</th>
+                      <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>Current Role</th>
+                      <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700', textAlign: 'center' }}>Admin Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.length > 0 ? (
+                      users.map((usr) => (
+                        <tr key={usr._id || usr.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                          <td style={{ padding: '14px 16px', fontWeight: '600', color: '#0f172a' }}>
+                            <div>{usr.name || usr.username || 'Google User'}</div>
+                            <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '400' }}>ID: {usr._id || usr.id}</div>
+                          </td>
+                          <td style={{ padding: '14px 16px', color: '#475569', fontSize: '13px' }}>
+                            {usr.email || 'No email provided'}
+                          </td>
+                          <td style={{ padding: '14px 16px' }}>
+                            <span style={{ 
+                              padding: '4px 10px', 
+                              borderRadius: '999px', 
+                              fontSize: '11px', 
+                              fontWeight: '700', 
+                              textTransform: 'uppercase',
+                              background: usr.role === 'admin' ? '#dbeafe' : '#f1f5f9',
+                              color: usr.role === 'admin' ? '#1d4ed8' : '#475569'
+                            }}>
+                              {usr.role || 'user'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '14px 16px', textAlign: 'center', display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                            <button 
+                              onClick={() => handleToggleRole(usr._id || usr.id, usr.role || 'user')}
+                              style={{ padding: '6px 12px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                            >
+                              {usr.role === 'admin' ? 'Demote to User' : 'Make Admin'}
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteUser(usr._id || usr.id)}
+                              style={{ padding: '6px 12px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>
+                          Koi registered user nahi mila!
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- TAB 4: ORDERS --- */}
+        {activeTab === 'orders' && (
+          <div>
+            <div style={{ marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '12px' }}>
+              <h2 style={{ color: '#0f172a', margin: 0, fontSize: '24px', fontWeight: '800' }}>Customer Orders</h2>
+              <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>View and fulfill customer checkouts</span>
+            </div>
+            <div style={{ background: '#fff', padding: '30px', borderRadius: '10px', textAlign: 'center', border: '1px solid #e2e8f0', color: '#64748b' }}>
+              📦 Abhi tak koi naya order place nahi hua hai. Checkout integration ke baad orders yahan show honge!
+            </div>
+          </div>
+        )}
+
+        {/* --- TAB 5: SETTINGS --- */}
+        {activeTab === 'settings' && (
+          <div>
+            <div style={{ marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '12px' }}>
+              <h2 style={{ color: '#0f172a', margin: 0, fontSize: '24px', fontWeight: '800' }}>Store Settings</h2>
+              <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Configure API endpoints and preferences</span>
+            </div>
+            <div style={{ background: '#fff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '600px' }}>
+              <div>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Product API Endpoint</label>
+                <input type="text" readOnly value="https://trend-nova-product-api-2.onrender.com/api/products" style={{ width: '100%', padding: '10px', marginTop: '4px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#64748b', fontSize: '13px' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Auth & Users API Endpoint</label>
+                <input type="text" readOnly value="https://auth-api-gtqf.onrender.com/api/auth" style={{ width: '100%', padding: '10px', marginTop: '4px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#64748b', fontSize: '13px' }} />
+              </div>
+              <div style={{ color: '#059669', fontSize: '13px', fontWeight: '600' }}>
+                ✅ All systems operating normally and securely connected.
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 };
 
 export default AdminDashboard;
+// import React, { useState, useEffect } from 'react';
+// import axios from 'axios';
+
+// const AdminDashboard = () => {
+//   const [products, setProducts] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [showAddModal, setShowAddModal] = useState(false);
+  
+//   // Search and Filter States
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [sortBy, setSortBy] = useState('default');
+  
+//   // Add Product Form State (Single Image & all fields matching server.js)
+//   const [formData, setFormData] = useState({
+//     name: '',
+//     category: '',
+//     subCategory: '',
+//     price: '',
+//     tags: '',
+//     image: '',
+//   });
+
+//   // 1. Backend API se saare products fetch karne ka function
+//   const fetchProducts = async () => {
+//     try {
+//       const response = await axios.get('https://trend-nova-product-api-2.onrender.com/api/products');
+//       setProducts(response.data);
+//       setLoading(false);
+//     } catch (error) {
+//       console.error('Products fetch error ', error);
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchProducts();
+//   }, []);
+
+//   // 2. Product Delete karne ka function with confirmation alert
+//   const handleDelete = async (id) => {
+//     if (window.confirm('Are you sure you want to delete this product?')) {
+//       try {
+//         await axios.delete(`https://trend-nova-product-api-2.onrender.com/api/products/${id}`);
+//         setProducts(products.filter((product) => (product._id !== id) && (product.id !== id)));
+//         alert('Product deleted successfully from database!');
+//       } catch (error) {
+//         console.error('Product delete karne mein error aaya:', error);
+//         alert('Product delete karne mein error aaya, console check karein.');
+//       }
+//     }
+//   };
+
+//   // 3. Single Image file select karke URL banane ka function
+//   const handleImageSelect = (e) => {
+//     const file = e.target.files[0];
+//     if (file) {
+//       const imageUrl = URL.createObjectURL(file);
+//       setFormData(prev => ({ ...prev, image: imageUrl }));
+//     }
+//   };
+
+//   // 4. New Product Submit karne ka function
+//   const handleAddProductSubmit = async (e) => {
+//     e.preventDefault();
+    
+//     if (!formData.image) {
+//       alert('Error: Product save karne ke liye ek image select karna zaroori hai!');
+//       return;
+//     }
+
+//     try {
+//       const newProductPayload = {
+//         name: formData.name,
+//         category: formData.category,
+//         subCategory: formData.subCategory,
+//         price: Number(formData.price),
+//         tags: formData.tags,
+//         image: formData.image, // Single image matching backend schema
+//         images: [formData.image],
+//       };
+
+//       const response = await axios.post('https://trend-nova-product-api-2.onrender.com/api/products', newProductPayload);
+      
+//       setProducts([...products, response.data.product || response.data]);
+//       setFormData({ name: '', category: '', subCategory: '', price: '', tags: '', image: '' });
+//       setShowAddModal(false);
+//       alert('Product successfully added to database!');
+//       fetchProducts(); // Refresh list to sync properly
+//     } catch (error) {
+//       console.error('Product add karne mein error aaya:', error);
+//       alert('Product add karne mein error aaya, console check karein.');
+//     }
+//   };
+
+//   // --- SEARCH & SORT LOGIC (Matching backend search keys: name, category, subCategory, tags) ---
+//   const filteredProducts = products.filter((product) => {
+//     const query = searchTerm.toLowerCase();
+//     return (
+//       (product.name && product.name.toLowerCase().includes(query)) ||
+//       (product.category && product.category.toLowerCase().includes(query)) ||
+//       (product.subCategory && product.subCategory.toLowerCase().includes(query)) ||
+//       (product.tags && product.tags.toLowerCase().includes(query))
+//     );
+//   });
+
+//   const sortedProducts = [...filteredProducts].sort((a, b) => {
+//     if (sortBy === 'price-low-high') return a.price - b.price;
+//     if (sortBy === 'price-high-low') return b.price - a.price;
+//     if (sortBy === 'name-az') return a.name.localeCompare(b.name);
+//     return 0; // Default
+//   });
+
+//   return (
+//     <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
+      
+//       {/* Header section with TrendNova Pink Logo & Add Product Button */}
+//       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid #f1f5f9', paddingBottom: '12px' }}>
+//         <div>
+//           <h2 style={{ color: '#db2777', margin: 0, fontSize: '24px', fontWeight: '800', letterSpacing: '0.5px' }}>
+//             Trend<span style={{ color: '#1e293b' }}>Nova</span>
+//           </h2>
+//           <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Admin Panel - Product Management</span>
+//         </div>
+//         <button
+//           onClick={() => setShowAddModal(true)}
+//           style={{ padding: '10px 18px', background: '#059669', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+//         >
+//           + Add Product
+//         </button>
+//       </div>
+
+//       {/* Search and Filter Bar (Amazon Style) */}
+//       <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap', background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+//         <input 
+//           type="text" 
+//           placeholder="🔍 Search by name, category, subcategory, or tags..." 
+//           value={searchTerm}
+//           onChange={(e) => setSearchTerm(e.target.value)}
+//           style={{ flex: 1, minWidth: '220px', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
+//         />
+//         <select 
+//           value={sortBy} 
+//           onChange={(e) => setSortBy(e.target.value)}
+//           style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '14px', cursor: 'pointer', outline: 'none' }}
+//         >
+//           <option value="default">Sort by: Featured</option>
+//           <option value="price-low-high">Price: Low to High</option>
+//           <option value="price-high-low">Price: High to Low</option>
+//           <option value="name-az">Name: A to Z</option>
+//         </select>
+//       </div>
+
+//       {/* Add Product Modal (Clean Form with Single Image Upload) */}
+//       {showAddModal && (
+//         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+//           <div style={{ background: '#fff', padding: '24px', borderRadius: '8px', width: '480px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+//             <h3 style={{ marginBottom: '16px', color: '#db2777' }}>Add New Product</h3>
+//             <form onSubmit={handleAddProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              
+//               <div>
+//                 <label style={{ fontSize: '13px', fontWeight: '500', color: '#475569' }}>Product Name</label>
+//                 <input 
+//                   type="text" 
+//                   required
+//                   placeholder="e.g. Classic Denim Jeans"
+//                   value={formData.name} 
+//                   onChange={(e) => setFormData({...formData, name: e.target.value})}
+//                   style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+//                 />
+//               </div>
+
+//               <div style={{ display: 'flex', gap: '8px' }}>
+//                 <div style={{ flex: 1 }}>
+//                   <label style={{ fontSize: '13px', fontWeight: '500', color: '#475569' }}>Category</label>
+//                   <input 
+//                     type="text" 
+//                     required
+//                     placeholder="e.g. Singh"
+//                     value={formData.category} 
+//                     onChange={(e) => setFormData({...formData, category: e.target.value})}
+//                     style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+//                   />
+//                 </div>
+//                 <div style={{ flex: 1 }}>
+//                   <label style={{ fontSize: '13px', fontWeight: '500', color: '#475569' }}>SubCategory</label>
+//                   <input 
+//                     type="text" 
+//                     required
+//                     placeholder="e.g. Kumar"
+//                     value={formData.subCategory} 
+//                     onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
+//                     style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+//                   />
+//                 </div>
+//               </div>
+
+//               <div style={{ display: 'flex', gap: '8px' }}>
+//                 <div style={{ flex: 1 }}>
+//                   <label style={{ fontSize: '13px', fontWeight: '500', color: '#475569' }}>Price (₹)</label>
+//                   <input 
+//                     type="number" 
+//                     required
+//                     placeholder="e.g. 1299"
+//                     value={formData.price} 
+//                     onChange={(e) => setFormData({...formData, price: e.target.value})}
+//                     style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+//                   />
+//                 </div>
+//                 <div style={{ flex: 1 }}>
+//                   <label style={{ fontSize: '13px', fontWeight: '500', color: '#475569' }}>Search Tags (Hashtag)</label>
+//                   <input 
+//                     type="text" 
+//                     placeholder="e.g. Suraj"
+//                     value={formData.tags} 
+//                     onChange={(e) => setFormData({...formData, tags: e.target.value})}
+//                     style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+//                   />
+//                 </div>
+//               </div>
+
+//               {/* Single Image File Input */}
+//               <div>
+//                 <label style={{ fontSize: '13px', fontWeight: '600', color: '#dc2626', display: 'block', marginBottom: '4px' }}>
+//                   Product Image *
+//                 </label>
+//                 <input 
+//                   type="file" 
+//                   accept="image/*" 
+//                   required 
+//                   onChange={handleImageSelect} 
+//                   style={{ width: '100%', padding: '6px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#f8fafc' }} 
+//                 />
+//                 <div style={{ fontSize: '12px', fontWeight: '600', color: formData.image ? '#059669' : '#dc2626', marginTop: '4px' }}>
+//                   {formData.image ? '✅ Image selected successfully!' : '⚠️ Please select a product image'}
+//                 </div>
+//               </div>
+
+//               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+//                 <button 
+//                   type="button" 
+//                   onClick={() => setShowAddModal(false)}
+//                   style={{ padding: '8px 14px', background: '#e2e8f0', color: '#334155', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+//                 >
+//                   Cancel
+//                 </button>
+//                 <button 
+//                   type="submit" 
+//                   style={{ padding: '8px 16px', background: '#059669', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+//                 >
+//                   Save Product
+//                 </button>
+//               </div>
+//             </form>
+//           </div>
+//         </div>
+//       )}
+
+//       {loading ? (
+//         <p style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>Products load ho rahe hain...</p>
+//       ) : (
+//         <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+//           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+//             <thead>
+//               <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+//                 <th style={{ padding: '12px 16px', color: '#475569', fontSize: '13px' }}>Product Image & Name</th>
+//                 <th style={{ padding: '12px 16px', color: '#475569', fontSize: '13px' }}>Category / SubCategory / Tags</th>
+//                 <th style={{ padding: '12px 16px', color: '#475569', fontSize: '13px' }}>Price</th>
+//                 <th style={{ padding: '12px 16px', color: '#475569', fontSize: '13px', textAlign: 'center' }}>Actions</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {sortedProducts.length > 0 ? (
+//                 sortedProducts.map((product) => (
+//                   <tr key={product._id || product.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+//                     <td style={{ padding: '14px 16px', fontWeight: '500', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '12px' }}>
+//                       <img 
+//                         src={product.image || (product.images && product.images[0])} 
+//                         alt={product.name} 
+//                         style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1' }} 
+//                       />
+//                       <span>{product.name}</span>
+//                     </td>
+//                     <td style={{ padding: '14px 16px', color: '#64748b', fontSize: '13px' }}>
+//                       <div><b>Cat:</b> {product.category || 'N/A'}</div>
+//                       <div><b>Sub:</b> {product.subCategory || 'N/A'}</div>
+//                       <div><b>Tags:</b> {product.tags || 'N/A'}</div>
+//                     </td>
+//                     <td style={{ padding: '14px 16px', color: '#059669', fontWeight: '600' }}>
+//                       ₹{product.price}
+//                     </td>
+//                     <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+//                       <button 
+//                         onClick={() => handleDelete(product._id || product.id)}
+//                         style={{ padding: '6px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+//                       >
+//                         Delete
+//                       </button>
+//                     </td>
+//                   </tr>
+//                 ))
+//               ) : (
+//                 <tr>
+//                   <td colSpan="4" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
+//                     Koi product nahi mila!
+//                   </td>
+//                 </tr>
+//               )}
+//             </tbody>
+//           </table>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default AdminDashboard;

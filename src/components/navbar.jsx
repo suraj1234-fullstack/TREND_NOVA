@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AdminDashboard from '../adminDashboard';
 import { Link } from 'react-router-dom';
+import CartModal from './cartmodel';
 
 const Navbar = ({ darkMode, setDarkMode }) => {
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showCartModal, setShowCartModal] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [activeTab, setActiveTab] = useState('categories'); // 'categories' or 'brands'
@@ -530,44 +533,113 @@ const [token, setToken] = useState(localStorage.getItem('token'));
               title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               aria-label="Toggle Theme" 
               style ={{
-         backgroundColor: darkMode ? '#1e293b' : '#fee2e2',
-          color: darkMode ? '#fafafa' : '#dc2626'}}
+         backgroundColor: darkMode ? '#1e293b' : '#fdfafa',
+          color: darkMode ? '#ece6e6' : '#3d3b3b'}}
             >
-              {darkMode ? <i class="fa-regular fa-moon"></i> : <i class="fa-solid fa-moon"></i>}
+              {darkMode ? <i class="fa-solid fa-sun"></i> : <i class="fa-solid fa-moon"></i>}
             </button>
             {/* --- SIGN IN / PROFILE CONDITION --- */}
 {token ? (
-  <div className="user-profile-container" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+  <div className="user-profile-container" style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
     
-    {/* यूजर का लोगो / आइकन */}
-    
-
-    {/* अगर यूजर एडमिन है, तो एडमिन पैनल का लिंक दिखेगा */}
-    {role === 'admin' && (
-      <Link to= "/admin-dashboard"
-        className="admin-link"
-        style={{  
-         
-         
-          textDecoration: 'none', 
-          padding:'5px',
-          backgroundColor: darkMode ? '#1e293b' : '#fee2e2',
-          color: darkMode ? '#ee4ea1' : '#dc2626',
-          borderRadius:'20px',
-          fontWeight:'600',
-          border:'1px solid #c9bdbd'
-         
-         
-        }}
-        >
-       <i class="fa-solid fa-unlock"></i>
-      </Link>
-    )}
-
-    {/* लॉगआउट बटन */}
-    <button onClick={handleLogout} className="logout-btn" style={{ padding: '5px 10px', background: darkMode ? '#e62488' : '#4f42c2', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
-      Logout
+    {/* Account Button Trigger with Dropdown Arrow */}
+    <button 
+      onClick={() => setShowUserDropdown(!showUserDropdown)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '9px 5px',
+        backgroundColor: darkMode ? '#1e293b' : '#f8f8f8',
+        color: darkMode ? '#f472b6' : '#db2777',
+        borderRadius: '20px',
+        border: '1px solid #d6cacaa2',
+        fontWeight: '600',
+        fontSize: '13px',
+        cursor: 'pointer'
+      }}
+    >
+      <i className="fa-solid fa-user-circle" style={{ fontSize: '15px' }}></i>
+      <span>Account</span>
+      <i className={`fa-solid fa-chevron-${showUserDropdown ? 'up' : 'down'}`} style={{ fontSize: '10px', marginLeft: '2px' }}></i>
     </button>
+
+    {/* Professional Dropdown Menu */}
+    {showUserDropdown && (
+      <div style={{
+        position: 'absolute',
+        right: 0,
+        top: '45px',
+        width: '220px',
+        backgroundColor: darkMode ? '#1e293b' : '#ffffff',
+        border: '1px solid #cbd5e1',
+        borderRadius: '12px',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+        padding: '12px',
+        zIndex: 1100,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px'
+      }}>
+        
+        {/* User Info Section: ID/Name & Role */}
+        <div style={{ padding: '6px 8px', borderBottom: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`, fontSize: '12px', color: darkMode ? '#94a3b8' : '#64748b' }}>
+          <div style={{ fontWeight: '700', color: darkMode ? '#f8fafc' : '#0f172a' }}>
+            {localStorage.getItem('userName') || 'User Account'}
+          </div>
+          <div style={{ fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>
+            Role: <span style={{ textTransform: 'uppercase', fontWeight: 'bold', color: '#db2777' }}>{role || 'user'}</span>
+          </div>
+        </div>
+
+        {/* Admin Dashboard Access (Only if Admin) */}
+        {role === 'admin' && (
+          <Link 
+            to="/admin-dashboard"
+            onClick={() => setShowUserDropdown(false)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              padding: '8px 10px', 
+              borderRadius: '8px', 
+              textDecoration: 'none', 
+              fontSize: '12.5px', 
+              fontWeight: '600',
+              backgroundColor: darkMode ? '#334155' : '#f1f5f9',
+              color: darkMode ? '#f472b6' : '#db2777'
+            }}
+          >
+            <i className="fa-solid fa-unlock"></i>
+            <span>Admin Dashboard</span>
+          </Link>
+        )}
+
+        {/* Logout Option */}
+        <button 
+          onClick={() => { setShowUserDropdown(false); handleLogout(); }}
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            width: '100%', 
+            padding: '8px 10px', 
+            borderRadius: '8px', 
+            background: '#2330df', 
+            color: '#fff', 
+            border: 'none', 
+            fontSize: '12.5px', 
+            fontWeight: '600', 
+            cursor: 'pointer',
+            textAlign: 'left'
+          }}
+        >
+          <i className="fa-solid fa-right-from-bracket"></i>
+          <span>Logout</span>
+        </button>
+
+      </div>
+    )}
 
   </div>
 ) : (
@@ -575,9 +647,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
     </svg>
-    <span style={{
-      color : darkMode ? '#4861cf' : 'black'
-    }}>Sign In</span>
+    <span style={{ color: darkMode ? '#4861cf' : 'black' }}>Sign In</span>
   </span>
 )}
 
@@ -589,12 +659,40 @@ const [token, setToken] = useState(localStorage.getItem('token'));
               <span>Sign In</span>
             </span> */}
 
-            <span onClick={() => navigate('/cart')} className="action-item cart-wrapper" title="View Cart" style={{ cursor: 'pointer' }}>
+            <span 
+  onClick={() => setShowCartModal(true)} 
+  className="action-item cart-wrapper" 
+  title="View Cart" 
+  style={{ cursor: 'pointer', position: 'relative', display: 'inline-flex', alignItems: 'center' }}
+>
+  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+  </svg>
+  <span className="cart-badge" style={{ marginLeft: '4px', fontWeight: 'bold' }}>
+    {JSON.parse(localStorage.getItem('trendnova_cart') || '[]').reduce((acc, item) => acc + (item.quantity || 1), 0)}
+  </span>
+</span>
+
+{showCartModal && (
+  <CartModal 
+    cartItems={JSON.parse(localStorage.getItem('trendnova_cart') || '[]')} 
+    setCartItems={(newCart) => {
+      localStorage.setItem('trendnova_cart', JSON.stringify(newCart));
+      // Force re-render trick for Navbar count update
+      window.dispatchEvent(new Event('storage'));
+    }} 
+    onClose={() => setShowCartModal(false)} 
+  />
+)}
+            
+            
+
+            {/* <span onClick={() => navigate('/cart')} className="action-item cart-wrapper" title="View Cart" style={{ cursor: 'pointer' }}>
               <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               <span className="cart-badge">0</span>
-            </span>
+            </span> */}
 
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -1011,7 +1109,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
           min-width: 500px;
           min-height: 38px;
           padding: 4px 5px 4px 14px;
-          border: 1.2px solid #5cc0da;
+          border: 1.5px solid #5cc0da;
           border-radius: 999px;
           background: #f8fafc;
           transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
