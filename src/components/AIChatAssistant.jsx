@@ -176,7 +176,6 @@ const AIChatAssistant = () => {
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          border: 1px solid #e2e8f0;
           animation: popUp 0.25s ease-out;
           transition: background 0.25s ease, border-color 0.25s ease;
         }
@@ -248,7 +247,7 @@ const AIChatAssistant = () => {
           background: #fff;
           color: #334155;
           align-self: flex-start;
-          border: 1px solid #e2e8f0;
+      
         }
         .dark-theme .ai-msg.ai {
           background: #0f172a;

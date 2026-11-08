@@ -1,1438 +1,901 @@
-navbarcode 
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import AdminDashboard from '../adminDashboard';
-import { Link } from 'react-router-dom';
-import CartModal from './cartmodel';
+// import axios from 'axios';
 
-const Navbar = ({ darkMode, setDarkMode }) => {
-  const [showCartModal, setShowCartModal] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const [activeTab, setActiveTab] = useState('categories'); // 'categories' or 'brands'
-  const [searchQuery, setSearchQuery] = useState('');
+// const AdminDashboard = () => {
+//   // --- NAVIGATION TAB STATE ('products', 'users', 'analytics', 'orders', 'settings') ---
+//   const [activeTab, setActiveTab] = useState('products');
+
+//   // --- PRODUCTS STATES ---
+//   const [products, setProducts] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [showAddModal, setShowAddModal] = useState(false);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [sortBy, setSortBy] = useState('default');
   
-  // --- VOICE SEARCH STATE ---
-  const [isListening, setIsListening] = useState(false);
-  
-  // --- SCROLL SHRINK STATE FOR SUB-BAR ---
-  const [isScrolled, setIsScrolled] = useState(false);
+//   const [formData, setFormData] = useState({
+//     name: '',
+//     category: '',
+//     subCategory: '',
+//     price: '',
+//     tags: '',
+//     image: '',
+//   });
 
-  // --- DYNAMIC SCROLL BACKGROUND COLOR LOGIC (6 Colors) ---
-  const [navBg, setNavBg] = useState('#ffffff');
-  const navigate = useNavigate();
-  const location = useLocation();
+//   // --- USERS STATES (Auth API Integration) ---
+//   const [users, setUsers] = useState([]);
+//   const [usersLoading, setUsersLoading] = useState(false);
 
-  const handleGoogleSignIn = () => {
-    // सीधा बैकएंड के गूगल ऑथ राउट पर रीडायरेक्ट करेगा
-    window.location.href = 'https://auth-api-gtqf.onrender.com/api/auth/google';
-  };
+//   // 1. Backend API se saare products fetch karne ka function
+//   const fetchProducts = async () => {
+//     try {
+//       const response = await axios.get('https://trend-nova-product-api-2.onrender.com/api/products');
+//       setProducts(response.data);
+//       setLoading(false);
+//     } catch (error) {
+//       console.error('Products fetch error ', error);
+//       setLoading(false);
+//     }
+//   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = '/';
-  };
-const [token, setToken] = useState(localStorage.getItem('token'));
-  const [role, setRole] = useState(localStorage.getItem('role'));
+//   // 2. Auth API se saare users fetch karne ka function
+//   const fetchUsers = async () => {
+//     setUsersLoading(true);
+//     try {
+//       // Note: Agar aapke auth backend ka endpoint alag ho toh yahan adjust kiya ja sakta hai, standard GET route:
+//       const response = await axios.get('https://auth-api-gtqf.onrender.com/api/auth/users');
+//       setUsers(response.data.users || response.data);
+//     } catch (error) {
+//       console.error('Users fetch error (Auth API):', error);
+//       // Fallback agar API route mein koi path difference ho
+//       setUsers([
+//         { _id: '1', name: 'Suraj Kumar', email: 'web.devsurajkumar1980@gmail.com', role: 'admin' },
+//         { _id: '2', name: 'Demo User', email: 'user@gmail.com', role: 'user' }
+//       ]);
+//     } finally {
+//       setUsersLoading(false);
+//     }
+//   };
 
-  useEffect(() => {
-    const handleStorage = () => {
-      setToken(localStorage.getItem('token'));
-      setRole(localStorage.getItem('role'));
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
+//   useEffect(() => {
+//     fetchProducts();
+//     fetchUsers();
+//   }, []);
 
-  
-  
+//   // 3. Product Delete karne ka function
+//   const handleDelete = async (id) => {
+//     if (window.confirm('Are you sure you want to delete this product?')) {
+//       try {
+//         await axios.delete(`https://trend-nova-product-api-2.onrender.com/api/products/${id}`);
+//         setProducts(products.filter((product) => (product._id !== id) && (product.id !== id)));
+//         alert('Product deleted successfully from database!');
+//       } catch (error) {
+//         console.error('Product delete karne mein error aaya:', error);
+//         alert('Product delete karne mein error aaya, console check karein.');
+//       }
+//     }
+//   };
 
-  // Dynamic Theme Body Sync (Ensures Chat Assistant & Web Page stays perfectly themed)
-  useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add('dark');
-      document.documentElement.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark');
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
+//   // 4. User Delete karne ka function (Auth API)
+//   const handleDeleteUser = async (userId) => {
+//     if (window.confirm('Are you sure you want to delete this user?')) {
+//       try {
+//         await axios.delete(`https://auth-api-gtqf.onrender.com/api/auth/users/${userId}`);
+//         setUsers(users.filter(u => (u._id !== userId) && (u.id !== userId)));
+//         alert('User deleted successfully!');
+//       } catch (error) {
+//         console.error('User delete error:', error);
+//         // Local state update incase backend route differs slightly
+//         setUsers(users.filter(u => (u._id !== userId) && (u.id !== userId)));
+//         alert('User removed from UI list.');
+//       }
+//     }
+//   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
+//   // 5. Toggle User Role (Make Admin / Make User)
+//   const handleToggleRole = async (userId, currentRole) => {
+//     const newRole = currentRole === 'admin' ? 'user' : 'admin';
+//     if (window.confirm(`Change user role to ${newRole.toUpperCase()}?`)) {
+//       try {
+//         await axios.put(`https://auth-api-gtqf.onrender.com/api/auth/users/${userId}`, { role: newRole });
+//         setUsers(users.map(u => {
+//           if ((u._id === userId) || (u.id === userId)) {
+//             return { ...u, role: newRole };
+//           }
+//           return u;
+//         }));
+//         alert(`User role updated to ${newRole} successfully!`);
+//       } catch (error) {
+//         console.error('Role update error:', error);
+//         // Optimistic local update
+//         setUsers(users.map(u => {
+//           if ((u._id === userId) || (u.id === userId)) {
+//             return { ...u, role: newRole };
+//           }
+//           return u;
+//         }));
+//       }
+//     }
+//   };
 
-      // Scroll detect for hiding icons / shrinking bar
-      if (scrollY > 40) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+//   // 6. Single Image file select karke URL banane ka function
+//   const handleImageSelect = (e) => {
+//     const file = e.target.files[0];
+//     if (file) {
+//       const imageUrl = URL.createObjectURL(file);
+//       setFormData(prev => ({ ...prev, image: imageUrl }));
+//     }
+//   };
 
-      if (scrollY > 2400) {
-        setNavBg('#fbcfe8'); // 6th Color (Footer ke paas): Soft Pink/Rose
-      } else if (scrollY > 1900) {
-        setNavBg('#fef6aa'); // 5th Color: Warm Peach / Orange
-      } else if (scrollY > 1400) {
-        setNavBg('#fef08a'); // 4th Color: Bright Lemon Yellow
-      } else if (scrollY > 900) {
-        setNavBg('#bbf7d0'); // 3rd Color: Clean Green
-      } else if (scrollY > 400) {
-        setNavBg('#bfdbfe'); // 2nd Color: Visible Blue
-      } else if (scrollY > 100) {
-        setNavBg('#e2e8f0'); // 1st Color: Light Slate Grey
-      } else {
-        setNavBg('#ffffff'); // Ekdum Top par: Clean White
-      }
-    };
+//   // 7. New Product Submit karne ka function
+//   const handleAddProductSubmit = async (e) => {
+//     e.preventDefault();
+    
+//     if (!formData.image) {
+//       alert('Error: Product save karne ke liye ek image select karna zaroori hai!');
+//       return;
+//     }
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+//     try {
+//       const newProductPayload = {
+//         name: formData.name,
+//         category: formData.category,
+//         subCategory: formData.subCategory,
+//         price: Number(formData.price),
+//         tags: formData.tags,
+//         image: formData.image,
+//         images: [formData.image],
+//       };
 
-  // Flipkart Style Categories Data for the new bar below navbar
-  const subCategoriesList = [
-    { title: 'Fashion', icon: <i className="fa-solid fa-vest"></i>, link: '/search?q=fashion' },
-    { title: 'Mobiles', icon: <i className="fa-solid fa-mobile-screen-button"></i>, link: '/search?q=mobiles' },
-    { title: 'Electronics', icon: <i className="fa-solid fa-tv"></i>, link: '/search?q=electronics' },
-    { title: 'Beauty', icon: <i className="fa-solid fa-venus-double"></i>, link: '/search?q=beauty' },
-    { title: 'Home', icon: <i className="fa-solid fa-house-chimney"></i>, link: '/search?q=home' },
-    { title: 'Appliances', icon:<i className="fa-solid fa-bolt"></i>, link: '/search?q=appliances' },
-    { title: 'Toys', icon: <i className="fa-solid fa-cubes-stacked"></i>, link: '/search?q=toys' },
-    { title: 'Grocery', icon: <i className="fa-solid fa-basket-shopping"></i>, link: '/search?q=grocery' },
-    { title: 'Two Wheelers', icon:<i className="fa-solid fa-motorcycle"></i>, link: '/search?q=two-wheelers' }
-  ];
-
-  const categoriesData = {
-    Men: {
-      categories: [
-        {
-          title: "Topwear",
-          items: ["T-Shirts", "Casual Shirts", "Formal Shirts", "Polos", "Sweatshirts", "Hoodies", "Jackets", "Sweaters", "Blazings & Coats", "Suits", "Oversized Tees", "Tank Tops", "Thermals"]
-        },
-        {
-          title: "Bottomwear",
-          items: ["Jeans", "Casual Trousers", "Formal Trousers", "Track Pants", "Shorts", "Cargo Pants", "Joggers", "Chinos", "Pyjamas", "Boxers", "Swimwear"]
-        },
-        {
-          title: "Footwear",
-          items: ["Casual Shoes", "Sports Shoes", "Formal Shoes", "Sneakers", "Sandals & Floaters", "Flip Flops", "Loafer Shoes", "Boots", "Running Shoes", "Ethnic Footwear", "Slippers"]
-        },
-        {
-          title: "Indian & Festive Wear",
-          items: ["Kurtas & Kurta Sets", "Sherwanis", "Nehru Jackets", "Dhotis", "Ethnic Jackets", "Pathani Suits"]
-        },
-        {
-          title: "Innerwear & Sleepwear",
-          items: ["Briefs & Trunks", "Boxers", "Vests", "Sleepwear & Loungewear", "Thermals"]
-        },
-        {
-          title: "Accessories & Grooming",
-          items: ["Watches", "Belts & Wallets", "Sunglasses", "Caps & Hats", "Backpacks", "Luggage & Bags", "Perfumes & Deos", "Beard Care", "Trimmers", "Jewellery & Cufflinks", "Tie & Pocket Squares", "Socks"]
-        }
-      ],
-      brands: [
-        {
-          title: "Top Clothing Brands",
-          items: ["Nike", "Adidas", "Puma", "Levi's", "Tommy Hilfiger", "Calvin Klein", "U.S. Polo Assn.", "Jack & Jones", "Zara", "H&M", "Roadster", "HRX", "Wrangler", "Pepe Jeans", "Allen Solly", "Van Heusen", "Peter England", "Louis Philippe", "Arrow", "Park Avenue", "Raymond", "Mufti", "Being Human", "Flying Machine", "Superdry", "U.S. Polo Assn. Denim", "United Colors of Benetton"]
-        },
-        {
-          title: "Footwear & Sportswear Brands",
-          items: ["Puma", "Nike", "Adidas Originals", "Reebok", "New Balance", "Skechers", "Asics", "Woodland", "Bata", "Red Tape", "Red Chief", "Lee Cooper", "Crocs", "Sparx", "Campus", "Fila", "Under Armour", "Converse", "Vans", "Clarks"]
-        },
-        {
-          title: "Grooming & Accessories Brands",
-          items: ["Fastrack", "Fossil", "Casio", "Titan", "Sonata", "Ray-Ban", "Oakley", "Wildcraft", "American Tourister", "Beardo", "The Man Company", "Ustraa", "Bombay Shaving Company", "Nivea Men", "Gillette"]
-        }
-      ]
-    },
-    Women: {
-      categories: [
-        {
-          title: "Indian & Fusion Wear",
-          items: ["Kurtas & Suits", "Kurtis, Tunics & Tops", "Sarees", "Ethnic Wear Sets", "Lehenga Cholis", "Dupattas & Shawls", "Dress Materials", "Palazzos & Salwars", "Leggings & Churidars", "Ethnic Jackets", "Blouses"]
-        },
-        {
-          title: "Western Wear",
-          items: ["Dresses", "Tops & Tees", "Jeans", "Trousers & Capris", "Shorts & Skirts", "Co-ords", "Jumpsuits", "Shrugs & Kimonos", "Sweaters & Sweatshirts", "Jackets & Coats", "Blazers"]
-        },
-        {
-          title: "Footwear",
-          items: ["Flats & Sandals", "Heels & Wedges", "Casual Shoes", "Sports Shoes & Sneakers", "Boots", "Ballerinas", "Flip Flops", "Ethnic Footwear", "Kolhapuris"]
-        },
-        {
-          title: "Lingerie & Sleepwear",
-          items: ["Bras & Bralettes", "Briefs & Panties", "Shapewear", "Sleepwear & Loungewear", "Nighties & Robes", "Camisoles & Slips", "Thermals"]
-        },
-        {
-          title: "Handbags & Accessories",
-          items: ["Handbags", "Tote Bags", "Sling Bags", "Clutches & Wallets", "Backpacks", "Sunglasses", "Watches", "Belts", "Scarves & Stoles", "Hair Accessories"]
-        },
-        {
-          title: "Jewellery",
-          items: ["Fashion Jewellery", "Fine Jewellery", "Earrings", "Necklaces & Pendants", "Bangles & Bracelets", "Rings", "Anklets", "Nose Rings"]
-        }
-      ],
-      brands: [
-        {
-          title: "Ethnic & Fusion Brands",
-          items: ["Biba", "W for Woman", "Aurelia", "FabIndia", "Global Desi", "Anouk", "Sangria", "Libas", "Rangriti", "Indya", "Soch", "Chhabra 555", "Manyavar Mohey"]
-        },
-        {
-          title: "Western Wear Brands",
-          items: ["Zara", "H&M", "Mango", "Forever 21", "VERO MODA", "ONLY", "AND", "Tokyo Talkies", "SASSAFRAS", "DressBerry", "Street 9", "Urbanic", "Levis", "Harpa", "Rheson", "Allen Solly Woman"]
-        },
-        {
-          title: "Footwear & Bags Brands",
-          items: ["Metro", "Mochi", "Catwalk", "Inc.5", "Bata", "Caprese", "Lavie", "Baggit", "Lino Perros", "Aldo", "Hidesign", "Zouk", "Gini & Jony"]
-        }
-      ]
-    },
-    Kids: {
-      categories: [
-        {
-          title: "Boys Clothing",
-          items: ["T-Shirts & Polos", "Shirts", "Jeans & Trousers", "Shorts & 3/4ths", "Ethnic Wear", "Track Pants & Joggers", "Sweaters & Sweatshirts", "Jackets", "Innerwear & Thermals", "Nightwear"]
-        },
-        {
-          title: "Girls Clothing",
-          items: ["Dresses & Frocks", "Tops & Tees", "Lehenga Cholis & Ethnic", "Jeans & Jeggings", "Shorts & Skirts", "Trousers & Capris", "Jumpsuits & Dungarees", "Innerwear", "Nightwear", "Co-ord Sets"]
-        },
-        {
-          title: "Infants (0-2 Years)",
-          items: ["Rompers & Onesies", "Clothing Sets", "Infant Ethnic Wear", "T-Shirts & Tops", "Bottom Wear", "Winter Wear", "Infant Footwear", "Bibs & Mittens", "Swaddles & Blankets"]
-        },
-        {
-          title: "Kids Footwear",
-          items: ["Casual Shoes", "Sports Shoes", "Sandals & Floaters", "Flip Flops & Slippers", "Boots", "Ballerinas", "School Shoes"]
-        },
-        {
-          title: "Toys & Baby Care",
-          items: ["Soft Toys", "Educational Toys", "Action Figures & Dolls", "Board Games & Puzzles", "Remote Control Toys", "Diapers & Wipes", "Baby Bath & Skin", "Feeding & Nursing", "Strollers & Prams"]
-        },
-        {
-          title: "School Supplies & Accessories",
-          items: ["School Bags", "Lunch Boxes", "Water Bottles", "Pencil Boxes & Stationery", "Watches", "Caps & Sunglasses"]
-        }
-      ],
-      brands: [
-        {
-          title: "Top Kids Fashion Brands",
-          items: ["Mothercare", "FirstClub", "Gini & Jony", "US Polo Kids", "U.S. Polo Assn. Kids", "Allen Solly Junior", "Peppermint", "Hopscotch", "Nauti Nati", "Max Kids", "Pantaloons Junior", "H&M Kids", "Marks & Spencer Kids"]
-        },
-        {
-          title: "Footwear & Toys Brands",
-          items: ["Puma Kids", "Adidas Kids", "Nike Kids", "Crocs Kids", "Lego", "Barbie", "Hot Wheels", "Fisher-Price", "Nerf", "Chicco", "Pampers", "Mee Mee", "Himalaya Baby", "Sebamed"]
-        }
-      ]
-    },
-    Beauty: {
-      categories: [
-        {
-          title: "Makeup",
-          items: ["Lipstick & Lip Gloss", "Foundation & Concealer", "Kajal & Eyeliner", "Mascara", "Compact & Loose Powder", "Blush & Highlighter", "Eye Shadow", "Primer & Setting Spray", "Makeup Brushes & Sponges", "Nail Polish & Care"]
-        },
-        {
-          title: "Skincare",
-          items: ["Face Wash & Cleansers", "Moisturizers & Face Creams", "Sunscreens", "Serums & Essences", "Face Masks & Sheets", "Toners & Mists", "Eye Creams", "Lip Balms", "Body Lotions", "Scrubs & Exfoliators"]
-        },
-        {
-          title: "Haircare",
-          items: ["Shampoos & Conditioners", "Hair Oils & Serums", "Hair Masks & Spa", "Hair Color", "Hair Styling Products", "Scalp Treatments", "Hair Fall Control"]
-        },
-        {
-          title: "Fragrances & Bath",
-          items: ["Perfumes (EDP/EDT)", "Deodorants & Body Sprays", "Body Mists", "Shower Gels & Body Wash", "Soaps & Bath Salts", "Hand & Foot Care"]
-        },
-        {
-          title: "Grooming Appliances",
-          items: ["Hair Dryers", "Hair Straighteners", "Hair Curlers", "Trimmers & Shavers", "Epilators", "Face Cleansing Devices"]
-        },
-        {
-          title: "Men's Grooming",
-          items: ["Beard Oils & Washes", "Shaving Creams & Foams", "Aftershave Lotions", "Men's Face Wash", "Men's Perfumes"]
-        }
-      ],
-      brands: [
-        {
-          title: "Top Makeup Brands",
-          items: ["Maybelline New York", "L'Oreal Paris", "M.A.C", "Lakme", "SUGAR Cosmetics", "Nykaa Cosmetics", "Kay Beauty", "Faces Canada", "Colorbar", "Rimmel", "REVLON", "Swiss Beauty", "Insight Cosmetics"]
-        },
-        {
-          title: "Top Skincare & Haircare Brands",
-          items: ["The Ordinary", "Minimalist", "Mamaearth", "Cetaphil", "Neutrogena", "Plum", "Dot & Key", "Lotus Herbals", "Biotique", "Forest Essentials", "Derma Co", "Tresemme", "Dove", "Matrix", "Schwarzkopf"]
-        },
-        {
-          title: "Fragrance & Appliances Brands",
-          items: ["Philips", "Nova", "VEGA", "Dyson", "Havells", "Titan Skinn", "Davidoff", "Calvin Klein Perfumes", "Jaguar", "Nivea", "Axe", "Old Spice"]
-        }
-      ]
-    },
-    "Home & Kitchen": {
-      categories: [
-        {
-          title: "Bed Linen & Furnishing",
-          items: ["Bedsheets & Pillow Covers", "Blankets, Quilts & Dohars", "Pillows & Cushions", "Cushion Covers", "Curtains & Drapes", "Mattress Protectors", "Rugs & Carpets", "Door Mats"]
-        },
-        {
-          title: "Kitchen & Dining",
-          items: ["Cookware & Sets", "Pressure Cookers", "Serveware & Dinnerware", "Glasses & Drinkware", "Cutlery Sets", "Storage Containers & Jars", "Lunch Boxes & Bottles", "Kitchen Tools & Knives", "Bakeware"]
-        },
-        {
-          title: "Home Decor & Lighting",
-          items: ["Wall Art & Paintings", "Clocks", "Vases & Flowers", "Candles & Holders", "Showpieces & Figurines", "Mirrors", "Ceiling Lights & Lamps", "Wall Lights", "String Lights"]
-        },
-        {
-          title: "Home Appliances",
-          items: ["Mixer Grinders", "Juicers & Blenders", "Electric Kettles", "Air Fryers", "Microwave Ovens", "Toasters & Sandwich Makers", "Water Purifiers", "Vacuum Cleaners", "Irons & Steamers"]
-        },
-        {
-          title: "Storage & Organization",
-          items: ["Cloth Organizers", "Shoe Racks", "Laundry Baskets", "Bathroom Shelves", "Kitchen Racks & Holders", "Wardrobe Organizers"]
-        },
-        {
-          title: "Bath & Cleaning",
-          items: ["Bath Towels & Hand Towels", "Bathroom Accessories", "Mops & Brooms", "Cleaning Supplies", "Trash Cans & Bins"]
-        }
-      ],
-      brands: [
-        {
-          title: "Furnishing & Decor Brands",
-          items: ["Bombay Dyeing", "Spaces", "D'Decor", "Story@Home", "Home Centre", "IKEA", "Portico New York", "Raymond Home", "Kuber Industries", "Solimo"]
-        },
-        {
-          title: "Kitchenware Brands",
-          items: ["Prestige", "Hawkins", "Pigeon", "Milton", "Cello", "Borosil", "Wonderchef", "Butterfly", "Stahl", "Vinod Cookware", "Corelle"]
-        },
-        {
-          title: "Appliances Brands",
-          items: ["Philips", "Bajaj", "Morphy Richards", "Kent", "Kent", "Usha", "Havells", "Crompton", "Panasonic", "Eureka Forbes", "Bosch"]
-        }
-      ]
-    }
-  };
-
-  const handleSearchSubmit = (e) => {
-    if (e) e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setIsOpen(false);
-      setActiveDropdown(null);
-      setSearchQuery('');
-    }
-  };
-  
-
-  // --- VOICE SEARCH HANDLER FUNCTION ---
-  const handleVoiceSearch = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Browser does not support voice recognition. Try using Chrome or Edge.");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-IN';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-    };
-
-    recognition.onresult = (event) => {
-      const speechToText = event.results[0][0].transcript;
-      setSearchQuery(speechToText);
-      setIsListening(false);
+//       const response = await axios.post('https://trend-nova-product-api-2.onrender.com/api/products', newProductPayload);
       
-      if (speechToText.trim()) {
-        navigate(`/search?q=${encodeURIComponent(speechToText.trim())}`);
-        setIsOpen(false);
-        setActiveDropdown(null);
-      }
-    };
+//       setProducts([...products, response.data.product || response.data]);
+//       setFormData({ name: '', category: '', subCategory: '', price: '', tags: '', image: '' });
+//       setShowAddModal(false);
+//       alert('Product successfully added to database!');
+//       fetchProducts();
+//     } catch (error) {
+//       console.error('Product add karne mein error aaya:', error);
+//       alert('Product add karne mein error aaya, console check karein.');
+//     }
+//   };
 
-    recognition.onerror = () => {
-      setIsListening(false);
-    };
+//   // --- SEARCH & SORT LOGIC ---
+//   const filteredProducts = products.filter((product) => {
+//     const query = searchTerm.toLowerCase();
+//     return (
+//       (product.name && product.name.toLowerCase().includes(query)) ||
+//       (product.category && product.category.toLowerCase().includes(query)) ||
+//       (product.subCategory && product.subCategory.toLowerCase().includes(query)) ||
+//       (product.tags && product.tags.toLowerCase().includes(query))
+//     );
+//   });
 
-    recognition.onend = () => {
-      setIsListening(false);
-    };
+//   const sortedProducts = [...filteredProducts].sort((a, b) => {
+//     if (sortBy === 'price-low-high') return a.price - b.price;
+//     if (sortBy === 'price-high-low') return b.price - a.price;
+//     if (sortBy === 'name-az') return a.name.localeCompare(b.name);
+//     return 0;
+//   });
 
-    recognition.start();
-  };
+//   return (
+//     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9', fontFamily: 'Inter, sans-serif' }}>
+      
+//       {/* ================= SIDEBAR NAVIGATION (LEFT) ================= */}
+//       <div style={{ width: '260px', background: '#0f172a', color: '#fff', display: 'flex', flexDirection: 'column', boxShadow: '4px 0 10px rgba(0,0,0,0.05)', position: 'fixed', height: '100vh', zIndex: 100 }}>
+        
+//         {/* Brand Header */}
+//         <div style={{ padding: '24px 20px', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', gap: '10px' }}>
+//           <div style={{ background: '#db2777', color: '#fff', width: '36px', height: '36px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '18px' }}>T</div>
+//           <div>
+//             <h2 style={{ color: '#db2777', margin: 0, fontSize: '20px', fontWeight: '800', letterSpacing: '0.5px' }}>
+//               Trend<span style={{ color: '#fff' }}>Nova</span>
+//             </h2>
+//             <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '500' }}>Admin Control Center</span>
+//           </div>
+//         </div>
 
-  return (
-    <>
-      <nav 
-        className="navbar" 
-        style={{ 
-          backgroundColor: navBg, 
-          transition: 'background-color 0.5s ease-in-out' 
-        }}
-      >
-        <div className="nav-container">
+//         {/* Sidebar Menu Links */}
+//         <div style={{ padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+//           <button 
+//             onClick={() => setActiveTab('analytics')}
+//             style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: activeTab === 'analytics' ? '#db2777' : 'transparent', color: activeTab === 'analytics' ? '#fff' : '#cbd5e1', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', textAlign: 'left', transition: 'all 0.2s' }}
+//           >
+//             📊 Dashboard Overview
+//           </button>
 
+//           <button 
+//             onClick={() => setActiveTab('products')}
+//             style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: activeTab === 'products' ? '#db2777' : 'transparent', color: activeTab === 'products' ? '#fff' : '#cbd5e1', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', textAlign: 'left', transition: 'all 0.2s' }}
+//           >
+//             📦 Products Management
+//           </button>
+
+//           <button 
+//             onClick={() => setActiveTab('users')}
+//             style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: activeTab === 'users' ? '#db2777' : 'transparent', color: activeTab === 'users' ? '#fff' : '#cbd5e1', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', textAlign: 'left', transition: 'all 0.2s' }}
+//           >
+//             👥 Users & Roles ({users.length})
+//           </button>
+
+//           <button 
+//             onClick={() => setActiveTab('orders')}
+//             style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: activeTab === 'orders' ? '#db2777' : 'transparent', color: activeTab === 'orders' ? '#fff' : '#cbd5e1', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', textAlign: 'left', transition: 'all 0.2s' }}
+//           >
+//             🛍️ Customer Orders
+//           </button>
+
+//           <button 
+//             onClick={() => setActiveTab('settings')}
+//             style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: activeTab === 'settings' ? '#db2777' : 'transparent', color: activeTab === 'settings' ? '#fff' : '#cbd5e1', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', textAlign: 'left', transition: 'all 0.2s' }}
+//           >
+//             ⚙️ Store Settings
+//           </button>
+//         </div>
+
+//         {/* Sidebar Footer / Back to Website */}
+//         <div style={{ padding: '16px 20px', borderTop: '1px solid #1e293b' }}>
+//           <a 
+//             href="/" 
+//             style={{ display: 'block', padding: '10px', background: '#1e293b', color: '#fff', textAlign: 'center', borderRadius: '6px', textDecoration: 'none', fontSize: '13px', fontWeight: '600' }}
+//           >
+//             ← Back to Storefront
+//           </a>
+//         </div>
+//       </div>
+
+//       {/* ================= MAIN CONTENT AREA (RIGHT) ================= */}
+//       <div style={{ marginLeft: '260px', flex: 1, padding: '30px', maxWidth: 'calc(100% - 260px)' }}>
+        
+//         {/* --- TAB 1: ANALYTICS / DASHBOARD OVERVIEW --- */}
+//         {activeTab === 'analytics' && (
+//           <div>
+//             <h1 style={{ fontSize: '26px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>Dashboard Overview</h1>
+//             <p style={{ color: '#64748b', marginBottom: '24px', fontSize: '14px' }}>Welcome back, Admin! Here is the live summary of your e-commerce store.</p>
+            
+//             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+//               <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: '4px solid #db2777' }}>
+//                 <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>TOTAL PRODUCTS</div>
+//                 <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginTop: '6px' }}>{products.length}</div>
+//               </div>
+//               <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: '4px solid #059669' }}>
+//                 <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>REGISTERED USERS</div>
+//                 <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginTop: '6px' }}>{users.length}</div>
+//               </div>
+//               <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderLeft: '4px solid #3b82f6' }}>
+//                 <div style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>STORE STATUS</div>
+//                 <div style={{ fontSize: '18px', fontWeight: '700', color: '#059669', marginTop: '10px' }}>🟢 Live & Operational</div>
+//               </div>
+//             </div>
+//           </div>
+//         )}
+
+//         {/* --- TAB 2: PRODUCTS MANAGEMENT (YOUR ORIGINAL CODE ENHANCED) --- */}
+//         {activeTab === 'products' && (
+//           <div>
+//             {/* Header section */}
+//             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '12px' }}>
+//               <div>
+//                 <h2 style={{ color: '#0f172a', margin: 0, fontSize: '24px', fontWeight: '800' }}>Products Inventory</h2>
+//                 <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Manage store items, prices and filters</span>
+//               </div>
+//               <button
+//                 onClick={() => setShowAddModal(true)}
+//                 style={{ padding: '10px 18px', background: '#059669', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+//               >
+//                 + Add Product
+//               </button>
+//             </div>
+
+//             {/* Search and Filter Bar */}
+//             <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap', background: '#fff', padding: '16px', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+//               <input 
+//                 type="text" 
+//                 placeholder="🔍 Search by name, category, subcategory, or tags..." 
+//                 value={searchTerm}
+//                 onChange={(e) => setSearchTerm(e.target.value)}
+//                 style={{ flex: 1, minWidth: '220px', padding: '10px 14px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
+//               />
+//               <select 
+//                 value={sortBy} 
+//                 onChange={(e) => setSortBy(e.target.value)}
+//                 style={{ padding: '10px 14px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '14px', cursor: 'pointer', outline: 'none' }}
+//               >
+//                 <option value="default">Sort by: Featured</option>
+//                 <option value="price-low-high">Price: Low to High</option>
+//                 <option value="price-high-low">Price: High to Low</option>
+//                 <option value="name-az">Name: A to Z</option>
+//               </select>
+//             </div>
+
+//             {/* Add Product Modal */}
+//             {showAddModal && (
+//               <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+//                 <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', width: '480px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+//                   <h3 style={{ marginBottom: '16px', color: '#db2777', fontSize: '20px', fontWeight: '800' }}>Add New Product</h3>
+//                   <form onSubmit={handleAddProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    
+//                     <div>
+//                       <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Product Name</label>
+//                       <input 
+//                         type="text" 
+//                         required
+//                         placeholder="e.g. Classic Denim Jeans"
+//                         value={formData.name} 
+//                         onChange={(e) => setFormData({...formData, name: e.target.value})}
+//                         style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+//                       />
+//                     </div>
+
+//                     <div style={{ display: 'flex', gap: '8px' }}>
+//                       <div style={{ flex: 1 }}>
+//                         <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Category</label>
+//                         <input 
+//                           type="text" 
+//                           required
+//                           placeholder="e.g. Men"
+//                           value={formData.category} 
+//                           onChange={(e) => setFormData({...formData, category: e.target.value})}
+//                           style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+//                         />
+//                       </div>
+//                       <div style={{ flex: 1 }}>
+//                         <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>SubCategory</label>
+//                         <input 
+//                           type="text" 
+//                           required
+//                           placeholder="e.g. Topwear"
+//                           value={formData.subCategory} 
+//                           onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
+//                           style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+//                         />
+//                       </div>
+//                     </div>
+
+//                     <div style={{ display: 'flex', gap: '8px' }}>
+//                       <div style={{ flex: 1 }}>
+//                         <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Price (₹)</label>
+//                         <input 
+//                           type="number" 
+//                           required
+//                           placeholder="e.g. 1299"
+//                           value={formData.price} 
+//                           onChange={(e) => setFormData({...formData, price: e.target.value})}
+//                           style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+//                         />
+//                       </div>
+//                       <div style={{ flex: 1 }}>
+//                         <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Search Tags</label>
+//                         <input 
+//                           type="text" 
+//                           placeholder="e.g. casual, trendy"
+//                           value={formData.tags} 
+//                           onChange={(e) => setFormData({...formData, tags: e.target.value})}
+//                           style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+//                         />
+//                       </div>
+//                     </div>
+
+//                     <div>
+//                       <label style={{ fontSize: '13px', fontWeight: '600', color: '#dc2626', display: 'block', marginBottom: '4px' }}>
+//                         Product Image *
+//                       </label>
+//                       <input 
+//                         type="file" 
+//                         accept="image/*" 
+//                         required 
+//                         onChange={handleImageSelect} 
+//                         style={{ width: '100%', padding: '8px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#f8fafc' }} 
+//                       />
+//                       <div style={{ fontSize: '12px', fontWeight: '600', color: formData.image ? '#059669' : '#dc2626', marginTop: '4px' }}>
+//                         {formData.image ? '✅ Image selected successfully!' : '⚠️ Please select a product image'}
+//                       </div>
+//                     </div>
+
+//                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
+//                       <button 
+//                         type="button" 
+//                         onClick={() => setShowAddModal(false)}
+//                         style={{ padding: '10px 16px', background: '#e2e8f0', color: '#334155', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+//                       >
+//                         Cancel
+//                       </button>
+//                       <button 
+//                         type="submit" 
+//                         style={{ padding: '10px 20px', background: '#059669', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+//                       >
+//                         Save Product
+//                       </button>
+//                     </div>
+//                   </form>
+//                 </div>
+//               </div>
+//             )}
+
+//             {loading ? (
+//               <p style={{ textAlign: 'center', color: '#64748b', padding: '30px' }}>Products load ho rahe hain...</p>
+//             ) : (
+//               <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+//                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+//                   <thead>
+//                     <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+//                       <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>Product Name</th>
+//                       <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>Category & Tags</th>
+//                       <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>Price</th>
+//                       <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700', textAlign: 'center' }}>Actions</th>
+//                     </tr>
+//                   </thead>
+//                   <tbody>
+//                     {sortedProducts.length > 0 ? (
+//                       sortedProducts.map((product) => (
+//                         <tr key={product._id || product.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+//                           <td style={{ padding: '14px 16px', fontWeight: '600', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '12px' }}>
+//                             <img 
+//                               src={product.image || (product.images && product.images[0])} 
+//                               alt={product.name} 
+//                               style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} 
+//                             />
+//                             <span>{product.name}</span>
+//                           </td>
+//                           <td style={{ padding: '14px 16px', color: '#64748b', fontSize: '13px' }}>
+//                             <div><b>Cat:</b> {product.category || 'N/A'} / {product.subCategory || 'N/A'}</div>
+//                             <div><b>Tags:</b> {product.tags || 'N/A'}</div>
+//                           </td>
+//                           <td style={{ padding: '14px 16px', color: '#059669', fontWeight: '700', fontSize: '15px' }}>
+//                             ₹{product.price}
+//                           </td>
+//                           <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+//                             <button 
+//                               onClick={() => handleDelete(product._id || product.id)}
+//                               style={{ padding: '6px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+//                             >
+//                               Delete
+//                             </button>
+//                           </td>
+//                         </tr>
+//                       ))
+//                     ) : (
+//                       <tr>
+//                         <td colSpan="4" style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>
+//                           Koi product nahi mila!
+//                         </td>
+//                       </tr>
+//                     )}
+//                   </tbody>
+//                 </table>
+//               </div>
+//             )}
+//           </div>
+//         )}
+
+//         {/* --- TAB 3: USERS & ROLES MANAGEMENT (AUTH API INTEGRATION) --- */}
+//         {activeTab === 'users' && (
+//           <div>
+//             <div style={{ marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '12px' }}>
+//               <h2 style={{ color: '#0f172a', margin: 0, fontSize: '24px', fontWeight: '800' }}>Users Management</h2>
+//               <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Fetch registered users from Auth API, manage roles & permissions</span>
+//             </div>
+
+//             {usersLoading ? (
+//               <p style={{ textAlign: 'center', color: '#64748b', padding: '30px' }}>Users data fetch ho raha hai...</p>
+//             ) : (
+//               <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+//                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+//                   <thead>
+//                     <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+//                       <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>User Name & ID</th>
+//                       <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>Email Address</th>
+//                       <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700' }}>Current Role</th>
+//                       <th style={{ padding: '14px 16px', color: '#475569', fontSize: '13px', fontWeight: '700', textAlign: 'center' }}>Admin Actions</th>
+//                     </tr>
+//                   </thead>
+//                   <tbody>
+//                     {users.length > 0 ? (
+//                       users.map((usr) => (
+//                         <tr key={usr._id || usr.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+//                           <td style={{ padding: '14px 16px', fontWeight: '600', color: '#0f172a' }}>
+//                             <div>{usr.name || usr.username || 'Google User'}</div>
+//                             <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '400' }}>ID: {usr._id || usr.id}</div>
+//                           </td>
+//                           <td style={{ padding: '14px 16px', color: '#475569', fontSize: '13px' }}>
+//                             {usr.email || 'No email provided'}
+//                           </td>
+//                           <td style={{ padding: '14px 16px' }}>
+//                             <span style={{ 
+//                               padding: '4px 10px', 
+//                               borderRadius: '999px', 
+//                               fontSize: '11px', 
+//                               fontWeight: '700', 
+//                               textTransform: 'uppercase',
+//                               background: usr.role === 'admin' ? '#dbeafe' : '#f1f5f9',
+//                               color: usr.role === 'admin' ? '#1d4ed8' : '#475569'
+//                             }}>
+//                               {usr.role || 'user'}
+//                             </span>
+//                           </td>
+//                           <td style={{ padding: '14px 16px', textAlign: 'center', display: 'flex', gap: '8px', justifyContent: 'center' }}>
+//                             <button 
+//                               onClick={() => handleToggleRole(usr._id || usr.id, usr.role || 'user')}
+//                               style={{ padding: '6px 12px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+//                             >
+//                               {usr.role === 'admin' ? 'Demote to User' : 'Make Admin'}
+//                             </button>
+//                             <button 
+//                               onClick={() => handleDeleteUser(usr._id || usr.id)}
+//                               style={{ padding: '6px 12px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+//                             >
+//                               Delete
+//                             </button>
+//                           </td>
+//                         </tr>
+//                       ))
+//                     ) : (
+//                       <tr>
+//                         <td colSpan="4" style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>
+//                           Koi registered user nahi mila!
+//                         </td>
+//                       </tr>
+//                     )}
+//                   </tbody>
+//                 </table>
+//               </div>
+//             )}
+//           </div>
+//         )}
+
+//         {/* --- TAB 4: ORDERS --- */}
+//         {activeTab === 'orders' && (
+//           <div>
+//             <div style={{ marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '12px' }}>
+//               <h2 style={{ color: '#0f172a', margin: 0, fontSize: '24px', fontWeight: '800' }}>Customer Orders</h2>
+//               <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>View and fulfill customer checkouts</span>
+//             </div>
+//             <div style={{ background: '#fff', padding: '30px', borderRadius: '10px', textAlign: 'center', border: '1px solid #e2e8f0', color: '#64748b' }}>
+//               📦 Abhi tak koi naya order place nahi hua hai. Checkout integration ke baad orders yahan show honge!
+//             </div>
+//           </div>
+//         )}
+
+//         {/* --- TAB 5: SETTINGS --- */}
+//         {activeTab === 'settings' && (
+//           <div>
+//             <div style={{ marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '12px' }}>
+//               <h2 style={{ color: '#0f172a', margin: 0, fontSize: '24px', fontWeight: '800' }}>Store Settings</h2>
+//               <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Configure API endpoints and preferences</span>
+//             </div>
+//             <div style={{ background: '#fff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '600px' }}>
+//               <div>
+//                 <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Product API Endpoint</label>
+//                 <input type="text" readOnly value="https://trend-nova-product-api-2.onrender.com/api/products" style={{ width: '100%', padding: '10px', marginTop: '4px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#64748b', fontSize: '13px' }} />
+//               </div>
+//               <div>
+//                 <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Auth & Users API Endpoint</label>
+//                 <input type="text" readOnly value="https://auth-api-gtqf.onrender.com/api/auth" style={{ width: '100%', padding: '10px', marginTop: '4px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#64748b', fontSize: '13px' }} />
+//               </div>
+//               <div style={{ color: '#059669', fontSize: '13px', fontWeight: '600' }}>
+//                 ✅ All systems operating normally and securely connected.
+//               </div>
+//             </div>
+//           </div>
+//         )}
+
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default AdminDashboard;
+// // import React, { useState, useEffect } from 'react';
+// // import axios from 'axios';
+
+// // const AdminDashboard = () => {
+// //   const [products, setProducts] = useState([]);
+// //   const [loading, setLoading] = useState(true);
+// //   const [showAddModal, setShowAddModal] = useState(false);
   
-          
-          {/* Logo */}
-          <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="nav-logo" aria-label="TrendNova home">
-            <span className="logo-mark" aria-hidden="true">T</span>
-            <span className="logo-wordmark">Trend<span className="logo-highlight">Nova</span></span>
-          </a>
+// //   // Search and Filter States
+// //   const [searchTerm, setSearchTerm] = useState('');
+// //   const [sortBy, setSortBy] = useState('default');
+  
+// //   // Add Product Form State (Single Image & all fields matching server.js)
+// //   const [formData, setFormData] = useState({
+// //     name: '',
+// //     category: '',
+// //     subCategory: '',
+// //     price: '',
+// //     tags: '',
+// //     image: '',
+// //   });
 
-          {/* Desktop Mega-Menu Nav Items */}
-          <div className="nav-links">
-            {Object.keys(categoriesData).map((catName) => (
-              <div 
-                key={catName} 
-                className="nav-item-dropdown"
-                onMouseEnter={() => {
-                  setActiveDropdown(catName);
-                  setActiveTab('categories');
-                }}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                <button className={`nav-link-btn ${activeDropdown === catName ? 'active' : ''}`}>
-                  <span>{catName}</span>
-                  <svg className={`arrow-icon ${activeDropdown === catName ? 'rotate' : ''}`} width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
+// //   // 1. Backend API se saare products fetch karne ka function
+// //   const fetchProducts = async () => {
+// //     try {
+// //       const response = await axios.get('https://trend-nova-product-api-2.onrender.com/api/products');
+// //       setProducts(response.data);
+// //       setLoading(false);
+// //     } catch (error) {
+// //       console.error('Products fetch error ', error);
+// //       setLoading(false);
+// //     }
+// //   };
 
-                {/* Mega Dropdown Panel */}
-                {activeDropdown === catName && (
-                  <div className="mega-dropdown-box">
-                    
-                    {/* Inner Navigation Tabs (Categories vs Brands) */}
-                    <div className="mega-menu-tabs">
-                      <button 
-                        className={`tab-btn ${activeTab === 'categories' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('categories')}
-                      >
-                        📂 Categories ({categoriesData[catName].categories.reduce((acc, c) => acc + c.items.length, 0)}+ Items)
-                      </button>
-                      <button 
-                        className={`tab-btn ${activeTab === 'brands' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('brands')}
-                      >
-                        🏷️ Top Brands ({categoriesData[catName].brands.reduce((acc, b) => acc + b.items.length, 0)}+ Brands)
-                      </button>
-                    </div>
+// //   useEffect(() => {
+// //     fetchProducts();
+// //   }, []);
 
-                    {/* Tab Content Display */}
-                    <div className="mega-menu-content">
-                      {activeTab === 'categories' ? (
-                        <div className="mega-grid-container">
-                          {categoriesData[catName].categories.map((group, idx) => (
-                            <div key={idx} className="mega-column">
-                              <h4 className="mega-group-title">{group.title}</h4>
-                              <ul className="mega-item-list">
-                                {group.items.map((item, itemIdx) => (
-                                  <li key={itemIdx}>
-                                    <span 
-                                      onClick={() => {
-                                        navigate(`/search?q=${encodeURIComponent(item)}`);
-                                        setActiveDropdown(null);
-                                      }}
-                                      className="mega-item-link"
-                                      style={{ cursor: 'pointer' }}
-                                    >
-                                      {item}
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="mega-grid-container brands-grid">
-                          {categoriesData[catName].brands.map((group, idx) => (
-                            <div key={idx} className="mega-column">
-                              <h4 className="mega-group-title brand-title">{group.title}</h4>
-                              <ul className="mega-item-list brand-list">
-                                {group.items.map((brand, brandIdx) => (
-                                  <li key={brandIdx}>
-                                    <span 
-                                      onClick={() => {
-                                        navigate(`/search?q=${encodeURIComponent(brand)}`);
-                                        setActiveDropdown(null);
-                                      }}
-                                      className="mega-item-link brand-link"
-                                      style={{ cursor: 'pointer' }}
-                                    >
-                                      {brand}
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="mega-footer-bar">
-                      <span>Explore complete {catName} collection with instant filter options.</span>
-                      <span 
-                        onClick={() => {
-                          navigate(`/search?q=${encodeURIComponent(catName)}`);
-                          setActiveDropdown(null);
-                        }} 
-                        className="view-all-link"
-                        style={{ cursor: 'pointer' }}
-                      >
-                        View All {catName} →
-                      </span>
-                    </div>
+// //   // 2. Product Delete karne ka function with confirmation alert
+// //   const handleDelete = async (id) => {
+// //     if (window.confirm('Are you sure you want to delete this product?')) {
+// //       try {
+// //         await axios.delete(`https://trend-nova-product-api-2.onrender.com/api/products/${id}`);
+// //         setProducts(products.filter((product) => (product._id !== id) && (product.id !== id)));
+// //         alert('Product deleted successfully from database!');
+// //       } catch (error) {
+// //         console.error('Product delete karne mein error aaya:', error);
+// //         alert('Product delete karne mein error aaya, console check karein.');
+// //       }
+// //     }
+// //   };
 
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+// //   // 3. Single Image file select karke URL banane ka function
+// //   const handleImageSelect = (e) => {
+// //     const file = e.target.files[0];
+// //     if (file) {
+// //       const imageUrl = URL.createObjectURL(file);
+// //       setFormData(prev => ({ ...prev, image: imageUrl }));
+// //     }
+// //   };
 
-          {/* Right Action Icons & Search */}
-          <div className="nav-actions">
-            
-            {/* Desktop Search */}
-            <form onSubmit={handleSearchSubmit} className="search-group desktop-search">
-              <input
-                type="text"
-                placeholder="Search for Products, Brands and More"
-                className="search-input-field"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+// //   // 4. New Product Submit karne ka function
+// //   const handleAddProductSubmit = async (e) => {
+// //     e.preventDefault();
+    
+// //     if (!formData.image) {
+// //       alert('Error: Product save karne ke liye ek image select karna zaroori hai!');
+// //       return;
+// //     }
+
+// //     try {
+// //       const newProductPayload = {
+// //         name: formData.name,
+// //         category: formData.category,
+// //         subCategory: formData.subCategory,
+// //         price: Number(formData.price),
+// //         tags: formData.tags,
+// //         image: formData.image, // Single image matching backend schema
+// //         images: [formData.image],
+// //       };
+
+// //       const response = await axios.post('https://trend-nova-product-api-2.onrender.com/api/products', newProductPayload);
+      
+// //       setProducts([...products, response.data.product || response.data]);
+// //       setFormData({ name: '', category: '', subCategory: '', price: '', tags: '', image: '' });
+// //       setShowAddModal(false);
+// //       alert('Product successfully added to database!');
+// //       fetchProducts(); // Refresh list to sync properly
+// //     } catch (error) {
+// //       console.error('Product add karne mein error aaya:', error);
+// //       alert('Product add karne mein error aaya, console check karein.');
+// //     }
+// //   };
+
+// //   // --- SEARCH & SORT LOGIC (Matching backend search keys: name, category, subCategory, tags) ---
+// //   const filteredProducts = products.filter((product) => {
+// //     const query = searchTerm.toLowerCase();
+// //     return (
+// //       (product.name && product.name.toLowerCase().includes(query)) ||
+// //       (product.category && product.category.toLowerCase().includes(query)) ||
+// //       (product.subCategory && product.subCategory.toLowerCase().includes(query)) ||
+// //       (product.tags && product.tags.toLowerCase().includes(query))
+// //     );
+// //   });
+
+// //   const sortedProducts = [...filteredProducts].sort((a, b) => {
+// //     if (sortBy === 'price-low-high') return a.price - b.price;
+// //     if (sortBy === 'price-high-low') return b.price - a.price;
+// //     if (sortBy === 'name-az') return a.name.localeCompare(b.name);
+// //     return 0; // Default
+// //   });
+
+// //   return (
+// //     <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
+      
+// //       {/* Header section with TrendNova Pink Logo & Add Product Button */}
+// //       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid #f1f5f9', paddingBottom: '12px' }}>
+// //         <div>
+// //           <h2 style={{ color: '#db2777', margin: 0, fontSize: '24px', fontWeight: '800', letterSpacing: '0.5px' }}>
+// //             Trend<span style={{ color: '#1e293b' }}>Nova</span>
+// //           </h2>
+// //           <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Admin Panel - Product Management</span>
+// //         </div>
+// //         <button
+// //           onClick={() => setShowAddModal(true)}
+// //           style={{ padding: '10px 18px', background: '#059669', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+// //         >
+// //           + Add Product
+// //         </button>
+// //       </div>
+
+// //       {/* Search and Filter Bar (Amazon Style) */}
+// //       <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap', background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+// //         <input 
+// //           type="text" 
+// //           placeholder="🔍 Search by name, category, subcategory, or tags..." 
+// //           value={searchTerm}
+// //           onChange={(e) => setSearchTerm(e.target.value)}
+// //           style={{ flex: 1, minWidth: '220px', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
+// //         />
+// //         <select 
+// //           value={sortBy} 
+// //           onChange={(e) => setSortBy(e.target.value)}
+// //           style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '14px', cursor: 'pointer', outline: 'none' }}
+// //         >
+// //           <option value="default">Sort by: Featured</option>
+// //           <option value="price-low-high">Price: Low to High</option>
+// //           <option value="price-high-low">Price: High to Low</option>
+// //           <option value="name-az">Name: A to Z</option>
+// //         </select>
+// //       </div>
+
+// //       {/* Add Product Modal (Clean Form with Single Image Upload) */}
+// //       {showAddModal && (
+// //         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+// //           <div style={{ background: '#fff', padding: '24px', borderRadius: '8px', width: '480px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+// //             <h3 style={{ marginBottom: '16px', color: '#db2777' }}>Add New Product</h3>
+// //             <form onSubmit={handleAddProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               
-              {/* VOICE SPEAKER BUTTON */}
-              <button 
-                type="button" 
-                onClick={handleVoiceSearch} 
-                className={`voice-search-btn ${isListening ? 'listening' : ''}`}
-                title="Search by Voice"
-                aria-label="Search by Voice"
-              >
-                <i className="fa-solid fa-microphone-lines"></i>
-              </button>
+// //               <div>
+// //                 <label style={{ fontSize: '13px', fontWeight: '500', color: '#475569' }}>Product Name</label>
+// //                 <input 
+// //                   type="text" 
+// //                   required
+// //                   placeholder="e.g. Classic Denim Jeans"
+// //                   value={formData.name} 
+// //                   onChange={(e) => setFormData({...formData, name: e.target.value})}
+// //                   style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+// //                 />
+// //               </div>
 
-              <button type="submit" className="search-submit-btn" aria-label="Search">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <span>Search</span>
-              </button>
-            </form>
+// //               <div style={{ display: 'flex', gap: '8px' }}>
+// //                 <div style={{ flex: 1 }}>
+// //                   <label style={{ fontSize: '13px', fontWeight: '500', color: '#475569' }}>Category</label>
+// //                   <input 
+// //                     type="text" 
+// //                     required
+// //                     placeholder="e.g. Singh"
+// //                     value={formData.category} 
+// //                     onChange={(e) => setFormData({...formData, category: e.target.value})}
+// //                     style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+// //                   />
+// //                 </div>
+// //                 <div style={{ flex: 1 }}>
+// //                   <label style={{ fontSize: '13px', fontWeight: '500', color: '#475569' }}>SubCategory</label>
+// //                   <input 
+// //                     type="text" 
+// //                     required
+// //                     placeholder="e.g. Kumar"
+// //                     value={formData.subCategory} 
+// //                     onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
+// //                     style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+// //                   />
+// //                 </div>
+// //               </div>
 
-            {/* --- CHHOTA SA DARK / LIGHT MODE TOGGLE BUTTON --- */}
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="theme-icon-btn"
-              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              aria-label="Toggle Theme" 
-              style ={{
-         backgroundColor: darkMode ? '#1e293b' : '#fdfafa',
-          color: darkMode ? '#ece6e6' : '#3d3b3b'}}
-            >
-              {darkMode ? <i class="fa-solid fa-sun"></i> : <i class="fa-solid fa-moon"></i>}
-            </button>
-            {/* --- SIGN IN / PROFILE CONDITION --- */}
-{token ? (
-  <div className="user-profile-container" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-    
-    {/* यूजर का लोगो / आइकन */}
-    
+// //               <div style={{ display: 'flex', gap: '8px' }}>
+// //                 <div style={{ flex: 1 }}>
+// //                   <label style={{ fontSize: '13px', fontWeight: '500', color: '#475569' }}>Price (₹)</label>
+// //                   <input 
+// //                     type="number" 
+// //                     required
+// //                     placeholder="e.g. 1299"
+// //                     value={formData.price} 
+// //                     onChange={(e) => setFormData({...formData, price: e.target.value})}
+// //                     style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+// //                   />
+// //                 </div>
+// //                 <div style={{ flex: 1 }}>
+// //                   <label style={{ fontSize: '13px', fontWeight: '500', color: '#475569' }}>Search Tags (Hashtag)</label>
+// //                   <input 
+// //                     type="text" 
+// //                     placeholder="e.g. Suraj"
+// //                     value={formData.tags} 
+// //                     onChange={(e) => setFormData({...formData, tags: e.target.value})}
+// //                     style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #cbd5e1', marginTop: '4px' }}
+// //                   />
+// //                 </div>
+// //               </div>
 
-    {/* अगर यूजर एडमिन है, तो एडमिन पैनल का लिंक दिखेगा */}
-    {role === 'admin' && (
-      <Link to= "/admin-dashboard"
-        className="admin-link"
-        style={{  
-         
-         
-          textDecoration: 'none', 
-          padding:'5px',
-          backgroundColor: darkMode ? '#1e293b' : '#f8f8f8',
-          color: darkMode ? '#302e2e' : '#3d3b3b',
-          borderRadius:'20px',
-          fontWeight:'600',
-          border:'1px solid #d6cacaa2'
-         
-         
-        }}
-        >
-       <i class="fa-solid fa-unlock"></i>
-      </Link>
-    )}
+// //               {/* Single Image File Input */}
+// //               <div>
+// //                 <label style={{ fontSize: '13px', fontWeight: '600', color: '#dc2626', display: 'block', marginBottom: '4px' }}>
+// //                   Product Image *
+// //                 </label>
+// //                 <input 
+// //                   type="file" 
+// //                   accept="image/*" 
+// //                   required 
+// //                   onChange={handleImageSelect} 
+// //                   style={{ width: '100%', padding: '6px', fontSize: '13px', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#f8fafc' }} 
+// //                 />
+// //                 <div style={{ fontSize: '12px', fontWeight: '600', color: formData.image ? '#059669' : '#dc2626', marginTop: '4px' }}>
+// //                   {formData.image ? '✅ Image selected successfully!' : '⚠️ Please select a product image'}
+// //                 </div>
+// //               </div>
 
-    {/* लॉगआउट बटन */}
-    <button onClick={handleLogout} className="logout-btn" style={{ padding: '8px 10px', background: darkMode ? '#db2777' : '#4f42c2', color: '#fff', border: 'none', cursor: 'pointer', borderRadius: '4px' }}>
-      Logout
-    </button>
+// //               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+// //                 <button 
+// //                   type="button" 
+// //                   onClick={() => setShowAddModal(false)}
+// //                   style={{ padding: '8px 14px', background: '#e2e8f0', color: '#334155', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+// //                 >
+// //                   Cancel
+// //                 </button>
+// //                 <button 
+// //                   type="submit" 
+// //                   style={{ padding: '8px 16px', background: '#059669', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+// //                 >
+// //                   Save Product
+// //                 </button>
+// //               </div>
+// //             </form>
+// //           </div>
+// //         </div>
+// //       )}
 
-  </div>
-) : (
-  <span onClick={handleGoogleSignIn} className="action-item signin-desktop" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-    </svg>
-    <span style={{
-      color : darkMode ? '#4861cf' : 'black'
-    }}>Sign In</span>
-  </span>
-)}
+// //       {loading ? (
+// //         <p style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>Products load ho rahe hain...</p>
+// //       ) : (
+// //         <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+// //           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+// //             <thead>
+// //               <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+// //                 <th style={{ padding: '12px 16px', color: '#475569', fontSize: '13px' }}>Product Image & Name</th>
+// //                 <th style={{ padding: '12px 16px', color: '#475569', fontSize: '13px' }}>Category / SubCategory / Tags</th>
+// //                 <th style={{ padding: '12px 16px', color: '#475569', fontSize: '13px' }}>Price</th>
+// //                 <th style={{ padding: '12px 16px', color: '#475569', fontSize: '13px', textAlign: 'center' }}>Actions</th>
+// //               </tr>
+// //             </thead>
+// //             <tbody>
+// //               {sortedProducts.length > 0 ? (
+// //                 sortedProducts.map((product) => (
+// //                   <tr key={product._id || product.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+// //                     <td style={{ padding: '14px 16px', fontWeight: '500', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '12px' }}>
+// //                       <img 
+// //                         src={product.image || (product.images && product.images[0])} 
+// //                         alt={product.name} 
+// //                         style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1' }} 
+// //                       />
+// //                       <span>{product.name}</span>
+// //                     </td>
+// //                     <td style={{ padding: '14px 16px', color: '#64748b', fontSize: '13px' }}>
+// //                       <div><b>Cat:</b> {product.category || 'N/A'}</div>
+// //                       <div><b>Sub:</b> {product.subCategory || 'N/A'}</div>
+// //                       <div><b>Tags:</b> {product.tags || 'N/A'}</div>
+// //                     </td>
+// //                     <td style={{ padding: '14px 16px', color: '#059669', fontWeight: '600' }}>
+// //                       ₹{product.price}
+// //                     </td>
+// //                     <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+// //                       <button 
+// //                         onClick={() => handleDelete(product._id || product.id)}
+// //                         style={{ padding: '6px 14px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+// //                       >
+// //                         Delete
+// //                       </button>
+// //                     </td>
+// //                   </tr>
+// //                 ))
+// //               ) : (
+// //                 <tr>
+// //                   <td colSpan="4" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
+// //                     Koi product nahi mila!
+// //                   </td>
+// //                 </tr>
+// //               )}
+// //             </tbody>
+// //           </table>
+// //         </div>
+// //       )}
+// //     </div>
+// //   );
+// // };
 
-            {/* --- GOOGLE SIGN-IN DESKTOP BUTTON ---
-            <span onClick={handleGoogleSignIn} className="action-item signin-desktop" style={{ cursor: 'pointer' }}>
-              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              <span>Sign In</span>
-            </span> */}
-
-            <span 
-  onClick={() => setShowCartModal(true)} 
-  className="action-item cart-wrapper" 
-  title="View Cart" 
-  style={{ cursor: 'pointer', position: 'relative', display: 'inline-flex', alignItems: 'center' }}
->
-  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-  </svg>
-  <span className="cart-badge" style={{ marginLeft: '4px', fontWeight: 'bold' }}>
-    {JSON.parse(localStorage.getItem('trendnova_cart') || '[]').reduce((acc, item) => acc + (item.quantity || 1), 0)}
-  </span>
-</span>
-
-{showCartModal && (
-  <CartModal 
-    cartItems={JSON.parse(localStorage.getItem('trendnova_cart') || '[]')} 
-    setCartItems={(newCart) => {
-      localStorage.setItem('trendnova_cart', JSON.stringify(newCart));
-      // Force re-render trick for Navbar count update
-      window.dispatchEvent(new Event('storage'));
-    }} 
-    onClose={() => setShowCartModal(false)} 
-  />
-)}
-            
-            
-
-            {/* <span onClick={() => navigate('/cart')} className="action-item cart-wrapper" title="View Cart" style={{ cursor: 'pointer' }}>
-              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <span className="cart-badge">0</span>
-            </span> */}
-
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="mobile-toggle"
-              aria-label="Toggle Menu"
-            >
-              <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-          </div>
-
-        </div>
-
-        {/* Mobile Search Row */}
-        <div 
-          className="mobile-search-always-bar"
-          style={{ 
-            backgroundColor: navBg, 
-            transition: 'background-color 0.5s ease-in-out' 
-          }}
-        >
-          <form onSubmit={handleSearchSubmit} className="search-group mobile-always-search">
-            <input
-              type="text"
-              placeholder="Search products & brands..."
-              className="search-input-field"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            
-            <button 
-              type="button" 
-              onClick={handleVoiceSearch} 
-              className={`voice-search-btn ${isListening ? 'listening' : ''}`}
-              title="Search by Voice"
-            >
-              <i className="fa-solid fa-microphone"></i>
-            </button>
-
-            <button type="submit" className="search-submit-btn" aria-label="Search">
-              <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-          </form>
-        </div>
-
-        {/* Mobile Accordion Menu */}
-        <div className={`mobile-menu ${isOpen ? 'open' : ''}`}>
-          
-          <div className="mobile-nav-links">
-            {Object.keys(categoriesData).map((catName) => (
-              <details key={catName} className="mobile-category-block">
-                <summary className="mobile-cat-title">{catName}</summary>
-                <div className="mobile-accordion-body">
-                  <div className="mobile-sub-section">
-                    <div className="mobile-sub-heading">Categories</div>
-                    {categoriesData[catName].categories.map((group, idx) => (
-                      <div key={idx} className="mobile-group-box">
-                        <strong>{group.title}</strong>
-                        <div className="mobile-items-wrap">
-                          {group.items.slice(0, 6).map((item, itemIdx) => (
-                            <span 
-                              key={itemIdx} 
-                              onClick={() => {
-                                navigate(`/search?q=${encodeURIComponent(item)}`);
-                                setIsOpen(false);
-                              }}
-                              className="mobile-sub-link"
-                              style={{ cursor: 'pointer' }}
-                            >
-                              {item}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mobile-sub-section">
-                    <div className="mobile-sub-heading brand-heading">Popular Brands</div>
-                    <div className="mobile-items-wrap">
-                      {categoriesData[catName].brands.flatMap(b => b.items).slice(0, 10).map((brand, bIdx) => (
-                        <span 
-                          key={bIdx}
-                          onClick={() => {
-                            navigate(`/search?q=${encodeURIComponent(brand)}`);
-                            setIsOpen(false);
-                          }}
-                          className="mobile-sub-link brand-sub-link"
-                          style={{ cursor: 'pointer' }}
-                        >
-                          {brand}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </details>
-            ))}
-          </div>
-
-          {/* --- GOOGLE SIGN-IN OR USER PROFILE MOBILE BUTTONS --- */}
-{token ? (
-  <div style={{ marginTop: '18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-    {role === 'admin' && (
-      <Link 
-        to="/admin-dashboard" 
-        onClick={() => setIsOpen(false)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-          width: '100%',
-          minHeight: '44px',
-          padding: '10px 16px',
-          borderRadius: '10px',
-          backgroundColor: '#4e4545',
-          color: '#ffffff',
-          fontSize: '13.5px',
-          fontWeight: '750',
-          textDecoration: 'none',
-          boxShadow: '0 2px 5px rgba(220, 38, 38, 0.15)'
-        }}
-      >
-        <i className="fa-solid fa-unlock"></i>
-        <span>Admin Dashboard</span>
-      </Link>
-    )}
-
-    <button 
-      onClick={() => {
-        setIsOpen(false);
-        handleLogout();
-      }} 
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px',
-        width: '100%',
-        minHeight: '44px',
-        padding: '10px 16px',
-        borderRadius: '10px',
-        background: '#333',
-        color: '#fff',
-        border: 'none',
-        fontSize: '13.5px',
-        fontWeight: '750',
-        cursor: 'pointer',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-      }}
-    >
-      <i className="fa-solid fa-right-from-bracket"></i>
-      <span>Logout</span>
-    </button>
-  </div>
-) : (
-  <span onClick={handleGoogleSignIn} className="mobile-signin-btn" style={{ cursor: 'pointer', display: 'flex' }}>
-    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-    </svg>
-    <span>Sign In with Google</span>
-  </span>
-)}
-
-          {/* --- GOOGLE SIGN-IN MOBILE BUTTON ---
-          <span onClick={handleGoogleSignIn} className="mobile-signin-btn" style={{ cursor: 'pointer', display: 'flex' }}>
-            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span>Sign In with Google</span>
-          </span> */}
-        </div>
-
-        {/* --- DYNAMIC SMART SUB-CATEGORIES BAR (COLLAPSES ON SCROLL) --- */}
-        {location.pathname === '/' && (
-          <div className={`sub-categories-bar ${darkMode ? 'dark-sub-bar' : ''} ${isScrolled ? 'scrolled-sub-bar' : ''}`}>
-            <div className="sub-categories-track">
-              {subCategoriesList.map((cat, index) => (
-                <span key={index} onClick={() => navigate(cat.link)} className="sub-cat-item" style={{ cursor: 'pointer' }}>
-                  <div className={`sub-cat-icon-box ${darkMode ? 'dark-icon-box' : ''}`}>
-                    <span className="sub-cat-emoji">{cat.icon}</span>
-                  </div>
-                  <span className={`sub-cat-name ${darkMode ? 'dark-text' : ''}`}>{cat.title}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* Embedded Modern Styling */}
-      <style>{`
-        * { box-sizing: border-box; }
-        
-        body {
-          padding-top: 80px;
-        }
-        @media (max-width: 980px) {
-          body {
-            padding-top: 125px;
-          }
-        }
-
-        .navbar {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          width: 100%;
-          color: #0f172a;
-          box-shadow: 0 2px 14px rgba(15, 23, 42, 0.07);
-          z-index: 1000;
-          font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-        .nav-container {
-          width: 100%;
-          max-width: 1600px;
-          min-height: 60px;
-          margin: 0 auto;
-          padding: 6px 28px;
-          display: flex;
-          align-items: center;
-          gap: 24px;
-        }
-        .nav-logo {
-          display: inline-flex;
-          align-items: center;
-          flex: 0 0 auto;
-          white-space: nowrap;
-          font-size: 23px;
-          line-height: 1;
-          font-weight: 850;
-          color: #111827;
-          text-decoration: none;
-          letter-spacing: -0.8px;
-        }
-        .logo-highlight { color: #db2777; }
-        .nav-links {
-          display: flex;
-          flex: 1 1 auto;
-          min-width: 0;
-          align-items: center;
-          justify-content: center;
-          gap: clamp(12px, 1.45vw, 23px);
-          white-space: nowrap;
-        }
-        .nav-item-dropdown {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex: 0 0 auto;
-        }
-        .nav-item-dropdown::after {
-          content: "";
-          position: absolute;
-          top: 100%;
-          left: -6px;
-          right: -6px;
-          height: 14px;
-        }
-        .nav-link-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 5px;
-          min-height: 38px;
-          margin: 0;
-          padding: 0 2px;
-          border: 0;
-          background: transparent;
-          color: #334155;
-          font-family: inherit;
-          font-size: 13px;
-          line-height: 1;
-          font-weight: 650;
-          text-align: center;
-          white-space: nowrap;
-          cursor: pointer;
-          transition: color 160ms ease;
-        }
-        .nav-link-btn:hover, .nav-link-btn.active { color: #db2777; }
-        .arrow-icon { flex: 0 0 auto; transition: transform 180ms ease; }
-        .arrow-icon.rotate { transform: rotate(180deg); }
-
-        .mega-dropdown-box {
-          position: fixed;
-          top: 60px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: min(92vw, 1360px);
-          max-height: calc(100vh - 90px);
-          display: flex;
-          flex-direction: column;
-          background: #fff;
-          border: 1px solid #e2e8f0;
-          border-radius: 14px;
-          box-shadow: 0 22px 55px rgba(15, 23, 42, 0.16);
-          overflow: hidden;
-          z-index: 1001;
-          animation: megaFadeIn 160ms ease-out;
-        }
-        @keyframes megaFadeIn {
-          from { opacity: 0; transform: translate(-50%, 6px); }
-          to { opacity: 1; transform: translate(-50%, 0); }
-        }
-        .mega-menu-tabs {
-          display: flex;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 10px;
-          padding: 14px 22px;
-          background: #f8fafc;
-          border-bottom: 1px solid #e2e8f0;
-        }
-        .tab-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 36px;
-          padding: 8px 15px;
-          border: 1px solid #cbd5e1;
-          border-radius: 999px;
-          background: #fff;
-          color: #475569;
-          font-family: inherit;
-          font-size: 12px;
-          line-height: 1.25;
-          font-weight: 650;
-          cursor: pointer;
-          transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
-        }
-        .tab-btn.active, .tab-btn:hover {
-          color: #fff;
-          background: #db2777;
-          border-color: #db2777;
-          box-shadow: 0 3px 8px rgba(219, 39, 119, 0.18);
-        }
-        .mega-menu-content { padding: 22px; overflow-y: auto; }
-        .mega-grid-container {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
-          align-items: start;
-          gap: 24px;
-        }
-        .mega-column { display: flex; min-width: 0; flex-direction: column; }
-        .mega-group-title {
-          margin: 0 0 12px;
-          padding-bottom: 8px;
-          border-bottom: 1px solid #fbcfe8;
-          color: #be185d;
-          font-size: 12px;
-          line-height: 1.4;
-          font-weight: 750;
-          letter-spacing: 0.45px;
-          text-transform: uppercase;
-        }
-        .mega-group-title.brand-title { color: #0369a1; border-bottom-color: #bae6fd; }
-        .mega-item-list {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          margin: 0;
-          padding: 0;
-          list-style: none;
-        }
-        .mega-item-link {
-          display: inline-block;
-          color: #475569;
-          font-size: 12.5px;
-          line-height: 1.45;
-          font-weight: 450;
-          text-decoration: none;
-          transition: color 150ms ease, transform 150ms ease;
-        }
-        .mega-item-link:hover { color: #db2777; transform: translateX(2px); }
-        .mega-item-link.brand-link:hover { color: #0284c7; }
-        .mega-footer-bar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          padding: 12px 22px;
-          background: #f8fafc;
-          border-top: 1px solid #e2e8f0;
-          color: #64748b;
-          font-size: 12px;
-          line-height: 1.45;
-        }
-        .view-all-link { flex: 0 0 auto; color: #be185d; font-weight: 750; text-decoration: none; }
-        .view-all-link:hover { text-decoration: underline; }
-
-        .nav-actions {
-          display: flex;
-          flex: 0 0 auto;
-          align-items: center;
-          justify-content: flex-end;
-          gap: 13px;
-          white-space: nowrap;
-        }
-        .search-group {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          width: 250px;
-          min-width: 500px;
-          min-height: 38px;
-          padding: 4px 5px 4px 14px;
-          border: 1.2px solid #5cc0da;
-          border-radius: 999px;
-          background: #f8fafc;
-          transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
-        }
-        .search-group:focus-within {
-          border-color: #db2777;
-          background: #fff;
-          box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.10);
-        }
-        .desktop-search { flex: 0 1 250px; }
-        .search-input-field {
-          width: 100%;
-          min-width: 0;
-          padding: 0;
-          border: 0;
-          outline: 0;
-          background: transparent;
-          color: #0f172a;
-          font-family: inherit;
-          font-size: 12px;
-          line-height: 1.4;
-        }
-        .search-input-field::placeholder { color: #94a3b8; }
-        
-        .voice-search-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 28px;
-          height: 28px;
-          padding: 0;
-          border: none;
-          background: transparent;
-          color: #64748b;
-          font-size: 14px;
-          cursor: pointer;
-          transition: color 0.2s ease, transform 0.2s ease;
-          flex: 0 0 auto;
-        }
-        .voice-search-btn:hover {
-          color: #db2777;
-          transform: scale(1.1);
-        }
-        .voice-search-btn.listening {
-          color: #fff;
-          background-color: #dc2626;
-          border-radius: 50%;
-          animation: pulse-ring 1.5s infinite;
-        }
-        @keyframes pulse-ring {
-          0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
-          70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
-        }
-
-        .search-submit-btn {
-          display: inline-flex;
-          flex: 0 0 auto;
-          align-items: center;
-          justify-content: center;
-          gap: 5px;
-          min-height: 30px;
-          padding: 6px 10px;
-          border: 0;
-          border-radius: 999px;
-          background: linear-gradient(135deg, #db2777, #be185d);
-          color: #fff;
-          font-family: inherit;
-          font-size: 11px;
-          line-height: 1;
-          font-weight: 700;
-          cursor: pointer;
-          box-shadow: 0 2px 5px rgba(219, 39, 119, 0.18);
-          transition: transform 150ms ease, box-shadow 150ms ease;
-        }
-        .search-submit-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 9px rgba(219, 39, 119, 0.22); }
-        .theme-icon-btn {
-          display: inline-flex;
-          flex: 0 0 auto;
-          align-items: center;
-          justify-content: center;
-          width: 34px;
-          height: 34px;
-          padding: 0;
-          border: 1px solid #e2e8f0;
-          border-radius: 50%;
-          background: #f8fafc;
-          color: #334155;
-          font-size: 16px;
-          line-height: 1;
-          cursor: pointer;
-          transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
-        }
-        .theme-icon-btn:hover { transform: translateY(-1px); background: #f1f5f9; border-color: #cbd5e1; }
-        .mobile-extra-controls, .mobile-search-always-bar { display: none; }
-        .action-item {
-          position: relative;
-          display: inline-flex;
-          flex: 0 0 auto;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          min-height: 38px;
-          color: #334155;
-          font-size: 12px;
-          line-height: 1;
-          font-weight: 650;
-          text-decoration: none;
-          transition: color 160ms ease;
-        }
-        .action-item:hover { color: #db2777; }
-        .cart-wrapper { padding: 0 3px; }
-        .cart-badge {
-          position: absolute;
-          top: 1px;
-          right: -7px;
-          min-width: 15px;
-          padding: 2px 3px;
-          border-radius: 999px;
-          background: #db2777;
-          color: #fff;
-          font-size: 9px;
-          line-height: 1.2;
-          font-weight: 750;
-          text-align: center;
-        }
-        .mobile-toggle {
-          display: none;
-          align-items: center;
-          justify-content: center;
-          width: 38px;
-          height: 38px;
-          padding: 0;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
-          background: #fff;
-          color: #0f172a;
-          cursor: pointer;
-        }
-        .mobile-menu { display: none; }
-
-        .sub-categories-bar {
-          width: 100%;
-          background: rgba(225, 184, 233, 0.7);
-          backdrop-filter: blur(8px);
-          padding: 15px 16px;
-          border-top: 1px solid rgba(226, 232, 240, 0.5);
-          border-bottom: 1px solid rgba(226, 232, 240, 0.7);
-          overflow-x: auto;
-          white-space: nowrap;
-          scrollbar-width: none;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .sub-categories-bar::-webkit-scrollbar {
-          display: none;
-        }
-        .sub-categories-track {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          max-width: 1400px;
-          margin: 0 auto;
-          gap: 10px;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .sub-cat-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-decoration: none;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          flex: 1;
-          min-width: 60px;
-        }
-        .sub-cat-item:hover {
-          transform: translateY(-2px);
-        }
-        .sub-cat-icon-box {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.9);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 2px;
-          border: 1px solid rgba(226, 232, 240, 0.8);
-          opacity: 1;
-          transform: scale(1);
-          max-height: 40px;
-          overflow: hidden;
-          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .sub-cat-emoji {
-          font-size: 14px;
-          transition: opacity 0.2s ease;
-        }
-        .sub-cat-name {
-          color: #334155;
-          font-size: 10.5px;
-          font-weight: 600;
-          font-family: inherit;
-          text-align: center;
-          transition: color 0.3s ease;
-        }
-
-        .sub-categories-bar.scrolled-sub-bar {
-          padding: 3px 16px;
-          background: rgba(241, 245, 249, 0.6);
-        }
-        .sub-categories-bar.scrolled-sub-bar .sub-cat-icon-box {
-          opacity: 0;
-          transform: scale(0);
-          max-height: 0;
-          margin-bottom: 0;
-          border-width: 0;
-        }
-        .sub-categories-bar.scrolled-sub-bar .sub-cat-emoji {
-          opacity: 0;
-        }
-        .sub-categories-bar.scrolled-sub-bar .sub-cat-name {
-          font-size: 11px;
-          font-weight: 700;
-          color: #db2777;
-        }
-
-        .sub-categories-bar.dark-sub-bar {
-          background: rgba(15, 23, 42, 0.85);
-          border-top: 1px solid rgba(51, 65, 85, 0.5);
-          border-bottom: 1px solid rgba(51, 65, 85, 0.6);
-        }
-        .sub-categories-bar.dark-sub-bar.scrolled-sub-bar {
-          background: rgba(15, 23, 42, 0.4);
-        }
-        .dark-icon-box {
-          background: rgba(30, 41, 59, 0.9) !important;
-          border-color: rgba(51, 65, 85, 0.9) !important;
-        }
-        .dark-text {
-          color: #ffffff !important;
-        }
-        .sub-categories-bar.dark-sub-bar.scrolled-sub-bar .sub-cat-name {
-          color: #f472b6 !important;
-        }
-          @media (max-width: 980px) {
- 
-  .signin-desktop, 
-  .user-profile-container { 
-    display: none !important; 
-  }
-}
-
-        @media (max-width: 1320px) and (min-width: 981px) {
-          .nav-container { gap: 18px; padding-right: 20px; padding-left: 20px; }
-          .nav-links { gap: clamp(10px, 1.15vw, 16px); }
-          .nav-link-btn { font-size: 12.5px; }
-          .search-group { width: 210px; }
-          .desktop-search { flex-basis: 210px; }
-          .nav-actions { gap: 10px; }
-          . { display: none; }
-        }
-        @media (max-width: 1080px) and (min-width: 981px) {
-          .nav-container { gap: 14px; padding-right: 16px; padding-left: 16px; }
-          .nav-logo { font-size: 21px; }
-          .nav-links { gap: 10px; }
-          .search-group { width: 175px; }
-          .desktop-search { flex-basis: 175px; }
-          .search-submit-btn span { display: none; }
-        }
-
-        @media (max-width: 980px) {
-          .nav-container { min-height: 55px; padding: 8px 16px; gap: 10px; }
-          .nav-logo { font-size: 21px; }
-          .nav-links, .desktop-search, .signin-desktop { display: none; }
-          .nav-actions { margin-left: auto; gap: 8px; }
-          .theme-icon-btn { width: 34px; height: 34px; }
-          .mobile-toggle { display: inline-flex; }
-          .mobile-search-always-bar {
-            display: block;
-            padding: 0 14px 8px;
-            border-bottom: 1px solid #f1f5f9;
-          }
-          .mobile-always-search { width: 100%; min-height: 38px; min-width: 300px !important;}
-          .mobile-always-search .search-submit-btn { min-width: 32px; min-height: 30px; padding: 6px 8px; }
-          .mobile-menu.open {
-            display: block;
-            position: fixed;
-            top: 105px;
-            left: 0;
-            width: 100%;
-            height: calc(100dvh - 105px);
-            padding: 16px;
-            overflow-y: auto;
-            background: #fff;
-            box-sizing: border-box;
-            z-index: 999;
-            border-top: 1px solid #e2e8f0;
-          }
-          .mobile-extra-controls {
-            display: block;
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #e2e8f0;
-          }
-          .mobile-theme-btn {
-            width: 100%;
-            height: 42px;
-            padding: 0 14px;
-            border-radius: 10px;
-            font-family: inherit;
-            font-size: 13px;
-            font-weight: 650;
-            gap: 8px;
-          }
-          .mobile-category-block { padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
-          .mobile-cat-title {
-            color: #0f172a;
-            font-size: 14px;
-            line-height: 1.4;
-            font-weight: 750;
-            cursor: pointer;
-          }
-          .mobile-accordion-body { padding: 8px 0 4px; }
-          .mobile-sub-heading {
-            margin: 8px 0 6px;
-            color: #be185d;
-            font-size: 11px;
-            line-height: 1.4;
-            font-weight: 800;
-            letter-spacing: .5px;
-            text-transform: uppercase;
-          }
-          .mobile-sub-heading.brand-heading { color: #0369a1; }
-          .mobile-group-box { margin-bottom: 10px; color: #334155; font-size: 12px; line-height: 1.4; }
-          .mobile-group-box strong { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 700; }
-          .mobile-items-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-          .mobile-sub-link {
-            display: inline-flex;
-            align-items: center;
-            min-height: 27px;
-            padding: 4px 8px;
-            border-radius: 999px;
-            background: #f1f5f9;
-            color: #475569;
-            font-size: 11px;
-            line-height: 1.25;
-            text-decoration: none;
-          }
-          .mobile-sub-link.brand-sub-link { background: #e0f2fe; color: #0369a1; }
-          .mobile-signin-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            min-height: 44px;
-            margin-top: 18px;
-            padding: 10px 16px;
-            box-sizing: border-box;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #db2777, #be185d);
-            color: #fff !important;
-            font-size: 13.5px;
-            line-height: 1.2;
-            font-weight: 750;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(219, 39, 119, 0.2);
-          }
-          .mega-dropdown-box { display: none; }
-          
-          .sub-categories-track {
-            justify-content: flex-start;
-            gap: 14px;
-          }
-        }
-        @media (max-width: 420px) {
-          .nav-container { padding-right: 12px; padding-left: 12px; }
-          .nav-logo { font-size: 19px; }
-          .nav-actions { gap: 6px; }
-          .theme-icon-btn { width: 32px; height: 32px; }
-          .mobile-toggle { width: 35px; height: 35px; }
-          .mobile-menu.open { padding: 12px; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .navbar *, .navbar *::before, .navbar *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-        }
-      `}</style>
-    </>
-  );
-};
-
-export default Navbar;
+// // export default AdminDashboard;

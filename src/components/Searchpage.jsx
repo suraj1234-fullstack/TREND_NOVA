@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import CartModal from './cartmodel';
 
 const SearchPage = () => {
+  
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
 
@@ -14,9 +15,15 @@ const SearchPage = () => {
   const [showCartModal, setShowCartModal] = useState(false);
 
   useEffect(() => {
+    
     const savedCart = JSON.parse(localStorage.getItem('trendnova_cart')) || [];
     setCartItems(savedCart);
   }, []);
+
+  // --- Auto Scroll to Top on Page Load or Query Change ---
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [query]);
 
   // Add to Cart Function (Updates LocalStorage & Cart Badge)
   const handleAddToCart = (product) => {
@@ -35,7 +42,7 @@ const SearchPage = () => {
 
     // LocalStorage mein save kar do
     localStorage.setItem('trendnova_cart', JSON.stringify(updatedCart));
-    alert(`🛒 "${product.name}" added to Cart successfully!`);
+    
   };
   // const handleAddToCart = (product) => {
   //   let updatedCart = [...cartItems];
@@ -250,7 +257,7 @@ const SearchPage = () => {
 
       // 2. Razorpay Options Set Karo
       const options = {
-        key: "rzp_test_Txceh6GFO2ErwV", // Teri Test Key ID
+        key: "rzp_test_TxcEh6GfO2ErwY", // Teri Test Key ID
         amount: order.amount,
         currency: "INR",
         name: "TrendNova Store",
@@ -358,7 +365,7 @@ const SearchPage = () => {
               <h1 className="pdp-product-title">{selectedProduct.name}</h1>
               
               <div className="pdp-rating-row">
-                <span style={{ color: '#F59E0B' }}>{'★'.repeat(Math.floor(selectedProduct.rating || 4))}</span>
+                <span style={{ color: '#105099' }}>{'★'.repeat(Math.floor(selectedProduct.rating || 4))}</span>
                 <span className="pdp-rating-count">{selectedProduct.rating || '4.3'} Rating & Verified Reviews</span>
               </div>
 
@@ -884,7 +891,7 @@ const SearchPage = () => {
 
         .pdp-add-cart-btn {
           flex: 1;
-          background: #F59E0B;
+          background: #db2777;
           color: #fff;
           border: none;
           padding: 14px;
@@ -896,7 +903,7 @@ const SearchPage = () => {
 
         .pdp-buy-now-btn {
           flex: 1;
-          background: #F97316;
+          background: #1e3c9e;
           color: #fff;
           border: none;
           padding: 14px;

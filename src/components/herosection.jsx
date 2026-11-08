@@ -240,7 +240,7 @@ const HeroSection = () => {
   return (
     <div style={styles.mainWrapper}>
       {/* Top Discount Banner */}
-      <div style={styles.discountBanner} onClick={() => handleItemClick('Fashion Offer')}>
+      <div style={styles.discountBanner} >
         <span><strong>TrendNova Special Offer:</strong> Use Code <span style={styles.couponCode}>TREND30</span> & Get Flat 30% OFF!</span>
       </div>
 

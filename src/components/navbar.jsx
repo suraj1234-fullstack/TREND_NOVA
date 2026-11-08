@@ -45,6 +45,11 @@ const [token, setToken] = useState(localStorage.getItem('token'));
   }, []);
 
   
+
+  //sk
+  
+  //sk
+  
   
 
   // Dynamic Theme Body Sync (Ensures Chat Assistant & Web Page stays perfectly themed)
@@ -378,7 +383,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
           
           {/* Logo */}
           <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }} className="nav-logo" aria-label="TrendNova home">
-            <span className="logo-mark" aria-hidden="true">T</span>
+           
             <span className="logo-wordmark">Trend<span className="logo-highlight">Nova</span></span>
           </a>
 
@@ -898,11 +903,11 @@ const [token, setToken] = useState(localStorage.getItem('token'));
         body {
           padding-top: 80px;
         }
-        @media (max-width: 980px) {
-          body {
-            padding-top: 125px;
-          }
-        }
+        // @media (max-width: 980px) {
+        //   body {
+        //     padding-top: 125px;
+        //   }
+        // }
 
         .navbar {
           position: fixed;
