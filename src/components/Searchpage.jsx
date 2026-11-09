@@ -248,7 +248,7 @@ const SearchPage = () => {
         description: `Purchase of ${product.name}`,
         order_id: order.id,
         handler: function (response) {
-          alert("✅ Payment Successful! Payment ID: " + response.razorpay_payment_id);
+          alert(" Payment Successful! Payment ID: " + response.razorpay_payment_id);
           console.log("Payment Response:", response);
         },
         prefill: {
@@ -303,7 +303,7 @@ const SearchPage = () => {
       {loading && (
         <div className="loading-overlay">
           <div className="loading-brand">
-            <span style={{ color: '#111827' }}>Trend</span>
+            <span style={{ color: '#5c5e63' }}>Trend</span>
             <span style={{ color: '#db2777' }}>Nova</span>
           </div>
         </div>

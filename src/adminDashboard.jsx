@@ -345,7 +345,7 @@ const AdminDashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#334155' : '#cbd5e1'} />
                     <XAxis dataKey="name" stroke={darkMode ? '#94a3b8' : '#475569'} />
                     <YAxis stroke={darkMode ? '#94a3b8' : '#475569'} />
-                    <Tooltip contentStyle={{ backgroundColor: darkMode ? '#1e293b' : '#fff', borderColor: darkMode ? '#334155' : '#cbd5e1', color: darkMode ? '#fff' : '#000' }} />
+                    <Tooltip contentStyle={{ backgroundColor: darkMode ? '#1e293b' : 'rgb(255, 255, 255)', borderColor: darkMode ? '#334155' : '#cbd5e1', color: darkMode ? '#fff' : '#000' }} />
                     <Line type="monotone" dataKey="sales" stroke="#db2777" strokeWidth={3} dot={{ r: 5 }} />
                   </LineChart>
                 </ResponsiveContainer>
