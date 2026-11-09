@@ -42,22 +42,8 @@ const SearchPage = () => {
 
     // LocalStorage mein save kar do
     localStorage.setItem('trendnova_cart', JSON.stringify(updatedCart));
-    
+    setCartItems(updatedCart); // State update taaki live count turant dikhe
   };
-  // const handleAddToCart = (product) => {
-  //   let updatedCart = [...cartItems];
-  //   const existingIndex = updatedCart.findIndex(item => (item._id || item.id) === (product._id || product.id));
-
-  //   if (existingIndex > -1) {
-  //     updatedCart[existingIndex].quantity = (updatedCart[existingIndex].quantity || 1) + 1;
-  //   } else {
-  //     updatedCart.push({ ...product, quantity: 1 });
-  //   }
-
-  //   setCartItems(updatedCart);
-  //   localStorage.setItem('trendnova_cart', JSON.stringify(updatedCart));
-  //   alert(`🛒 "${product.name}" added to Cart successfully!`);
-  // };
 
   // --- Selected Product State for Detail View (PDP) ---
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -239,10 +225,10 @@ const SearchPage = () => {
     setCommentsList([...commentsList, { user: 'You (Customer)', text: userComment }]);
     setUserComment('');
   };
+  
   // --- RAZORPAY BUY NOW PAYMENT FUNCTION ---
   const handleBuyNow = async (product) => {
     try {
-      // 1. Backend se Order ID mangwao
       const response = await fetch('https://trend-nova-product-api-2.onrender.com/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -255,9 +241,8 @@ const SearchPage = () => {
         return;
       }
 
-      // 2. Razorpay Options Set Karo
       const options = {
-        key: "rzp_test_TxcEh6GfO2ErwY", // Teri Test Key ID
+        key: "rzp_test_TxcEh6GfO2ErwY",
         amount: order.amount,
         currency: "INR",
         name: "TrendNova Store",
@@ -266,7 +251,6 @@ const SearchPage = () => {
         handler: function (response) {
           alert("✅ Payment Successful! Payment ID: " + response.razorpay_payment_id);
           console.log("Payment Response:", response);
-          // Payment successful hone par chahe toh cart mein bhi add karke modal khol sakta hai
         },
         prefill: {
           name: "Suraj Kumar",
@@ -290,7 +274,7 @@ const SearchPage = () => {
   return (
     <div className="search-page-container">
       
-      {/* --- YOUR EXACT NAVBAR CART SNIPPET WITH DYNAMIC LIVE COUNT --- */}
+      {/* --- NAVBAR CART SNIPPET WITH DYNAMIC LIVE COUNT --- */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15px' }}>
         <span 
           onClick={() => setShowCartModal(true)} 
@@ -307,7 +291,7 @@ const SearchPage = () => {
         </span>
       </div>
 
-      {/* --- CART MODAL POPUP (AMAZON/FLIPKART STYLE) --- */}
+      {/* --- CART MODAL POPUP --- */}
       {showCartModal && (
         <CartModal 
           cartItems={cartItems} 
@@ -316,7 +300,7 @@ const SearchPage = () => {
         />
       )}
 
-      {/* --- PERFECTLY CENTERED & RESPONSIVE TRENDNOVA LOADER --- */}
+      {/* --- LOADER --- */}
       {loading && (
         <div className="loading-overlay">
           <div className="loading-brand">
@@ -326,7 +310,7 @@ const SearchPage = () => {
         </div>
       )}
 
-      {/* --- PROFESSIONAL PRODUCT DETAIL VIEW (PDP) IF CLICKED --- */}
+      {/* --- PROFESSIONAL PRODUCT DETAIL VIEW (PDP) --- */}
       {selectedProduct ? (
         <div className="pdp-container">
           <button 
@@ -389,18 +373,15 @@ const SearchPage = () => {
                 >
                   Add to Cart
                 </button>
-               <button 
-  className="pdp-buy-now-btn"
-  onClick={() => handleBuyNow(selectedProduct)}
->
-  Buy Now
-</button>
+                <button 
+                  className="pdp-buy-now-btn"
+                  onClick={() => handleBuyNow(selectedProduct)}
+                >
+                  Buy Now
+                </button>
               </div>
             </div>
           </div>
-
-
-          
 
           {/* --- CUSTOMER COMMENTS & REVIEWS SECTION --- */}
           <div className="pdp-comments-section">
@@ -465,7 +446,7 @@ const SearchPage = () => {
 
           <div className="main-content-layout">
             
-            {/* --- RESPONSIVE SIDEBAR FILTERS --- */}
+            {/* --- SIDEBAR FILTERS --- */}
             <div className={`sidebar-filters ${showFiltersMobile ? 'mobile-active' : ''}`}>
               <div className="sidebar-header">
                 <h3>Filter Results</h3>
@@ -665,7 +646,7 @@ const SearchPage = () => {
 
             </div>
 
-            {/* --- PRODUCTS DISPLAY GRID (CLICKABLE TO OPEN PDP) --- */}
+            {/* --- PRODUCTS DISPLAY GRID --- */}
             <div className="products-grid-area">
               <div className="products-responsive-grid">
                 {filteredProducts && filteredProducts.length > 0 ? (
@@ -740,26 +721,29 @@ const SearchPage = () => {
         </>
       )}
 
-      {/* --- RESPONSIVE CSS STYLES --- */}
+      {/* --- RESPONSIVE CSS FIXES FOR MOBILE --- */}
       <style>{`
         .search-page-container {
-          padding: 20px;
+          padding: 16px;
           max-width: 1440px;
-          margin: 80px auto 20px auto;
+          margin: 0px auto 20px auto;
           font-family: "Inter", "Segoe UI", Roboto, sans-serif;
           color: #0F1111;
           background-color: #F3F4F6;
           min-height: 80vh;
           box-sizing: border-box;
           position: relative;
+          overflow-x: hidden;
         }
 
         /* PDP Styling */
         .pdp-container {
           background: #fff;
-          padding: 30px;
+          padding: 24px;
           border-radius: 12px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          box-sizing: border-box;
+          width: 100%;
         }
 
         .back-to-search-btn {
@@ -775,7 +759,7 @@ const SearchPage = () => {
 
         .pdp-grid {
           display: flex;
-          gap: 40px;
+          gap: 30px;
           flex-wrap: wrap;
         }
 
@@ -783,7 +767,7 @@ const SearchPage = () => {
           display: flex;
           gap: 16px;
           flex: 1;
-          min-width: 320px;
+          min-width: 300px;
         }
 
         .pdp-thumbnails {
@@ -793,8 +777,8 @@ const SearchPage = () => {
         }
 
         .thumb-img {
-          width: 60px;
-          height: 60px;
+          width: 55px;
+          height: 55px;
           object-fit: cover;
           border-radius: 6px;
           border: 1px solid #D1D5DB;
@@ -813,7 +797,10 @@ const SearchPage = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          height: 400px;
+          height: 380px;
+          overflow: hidden;
+          padding: 10px;
+          box-sizing: border-box;
         }
 
         .pdp-main-img {
@@ -824,11 +811,11 @@ const SearchPage = () => {
 
         .pdp-info-section {
           flex: 1;
-          min-width: 300px;
+          min-width: 280px;
         }
 
         .pdp-product-title {
-          font-size: 26px;
+          font-size: 24px;
           font-weight: 800;
           color: #111827;
           margin: 0 0 10px 0;
@@ -857,7 +844,7 @@ const SearchPage = () => {
         }
 
         .pdp-current-price {
-          font-size: 28px;
+          font-size: 26px;
           font-weight: 800;
           color: #111827;
         }
@@ -887,34 +874,37 @@ const SearchPage = () => {
         .pdp-actions-row {
           display: flex;
           gap: 15px;
+          flex-wrap: wrap;
         }
 
         .pdp-add-cart-btn {
           flex: 1;
+          min-width: 130px;
           background: #db2777;
           color: #fff;
           border: none;
           padding: 14px;
           border-radius: 8px;
-          font-size: 16px;
+          font-size: 15px;
           font-weight: 700;
           cursor: pointer;
         }
 
         .pdp-buy-now-btn {
           flex: 1;
+          min-width: 130px;
           background: #1e3c9e;
           color: #fff;
           border: none;
           padding: 14px;
           border-radius: 8px;
-          font-size: 16px;
+          font-size: 15px;
           font-weight: 700;
           cursor: pointer;
         }
 
         .pdp-comments-section {
-          margin-top: 40px;
+          margin-top: 35px;
           border-top: 2px solid #E5E7EB;
           padding-top: 25px;
         }
@@ -929,10 +919,12 @@ const SearchPage = () => {
           display: flex;
           gap: 10px;
           margin-bottom: 20px;
+          flex-wrap: wrap;
         }
 
         .comment-input {
           flex: 1;
+          min-width: 220px;
           padding: 10px 14px;
           border: 1px solid #D1D5DB;
           border-radius: 6px;
@@ -968,7 +960,6 @@ const SearchPage = () => {
           font-size: 14px;
         }
 
-        /* PERFECT RESPONSIVE FULLSCREEN LOADER */
         .loading-overlay {
           position: fixed;
           top: 0;
@@ -999,7 +990,7 @@ const SearchPage = () => {
 
         .top-header-banner {
           background: #fff;
-          padding: 16px 24px;
+          padding: 16px 20px;
           border-radius: 10px;
           margin-bottom: 20px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.08);
@@ -1008,17 +999,18 @@ const SearchPage = () => {
           align-items: center;
           flex-wrap: wrap;
           gap: 15px;
+          box-sizing: border-box;
         }
 
         .search-title {
-          font-size: 20px;
+          font-size: 18px;
           font-weight: 700;
           margin: 0;
           color: #111827;
         }
 
         .search-count {
-          font-size: 14px;
+          font-size: 13px;
           color: #6B7280;
           margin: 4px 0 0 0;
         }
@@ -1027,6 +1019,7 @@ const SearchPage = () => {
           display: flex;
           align-items: center;
           gap: 12px;
+          flex-wrap: wrap;
         }
 
         .mobile-filter-btn {
@@ -1047,17 +1040,17 @@ const SearchPage = () => {
         }
 
         .sort-label {
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 600;
           color: #374151;
         }
 
         .sort-select {
-          padding: 8px 14px;
+          padding: 6px 10px;
           border-radius: 8px;
           border: 1px solid #D1D5DB;
           background: #F9FAFB;
-          font-size: 14px;
+          font-size: 13px;
           outline: none;
           cursor: pointer;
           font-weight: 500;
@@ -1065,15 +1058,17 @@ const SearchPage = () => {
 
         .main-content-layout {
           display: flex;
-          gap: 24px;
+          gap: 20px;
           align-items: flex-start;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .sidebar-filters {
-          width: 290px;
+          width: 270px;
           flex-shrink: 0;
           background: #fff;
-          padding: 20px;
+          padding: 16px;
           border-radius: 10px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.08);
           max-height: 85vh;
@@ -1087,11 +1082,11 @@ const SearchPage = () => {
           align-items: center;
           border-bottom: 2px solid #E5E7EB;
           padding-bottom: 8px;
-          margin-bottom: 16px;
+          margin-bottom: 14px;
         }
 
         .sidebar-header h3 {
-          font-size: 16px;
+          font-size: 15px;
           font-weight: 700;
           margin: 0;
           color: #111827;
@@ -1107,15 +1102,15 @@ const SearchPage = () => {
         }
 
         .filter-group {
-          margin-bottom: 20px;
+          margin-bottom: 16px;
           border-bottom: 1px solid #F3F4F6;
-          padding-bottom: 15px;
+          padding-bottom: 12px;
         }
 
         .filter-group h4 {
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 700;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
           color: #374151;
         }
 
@@ -1124,7 +1119,7 @@ const SearchPage = () => {
         }
 
         .filter-option label {
-          font-size: 13px;
+          font-size: 12.5px;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -1163,7 +1158,7 @@ const SearchPage = () => {
         .price-range-labels {
           display: flex;
           justify-content: space-between;
-          font-size: 12px;
+          font-size: 11.5px;
           color: #6B7280;
           margin-top: 4px;
         }
@@ -1171,18 +1166,21 @@ const SearchPage = () => {
         .products-grid-area {
           flex: 1;
           width: 100%;
+          min-width: 0;
         }
 
         .products-responsive-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-          gap: 20px;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 16px;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .product-card {
           border: 1px solid #E5E7EB;
           border-radius: 10px;
-          padding: 16px;
+          padding: 14px;
           background: #fff;
           box-shadow: 0 2px 4px rgba(0,0,0,0.04);
           display: flex;
@@ -1201,9 +1199,9 @@ const SearchPage = () => {
           position: relative;
           overflow: hidden;
           border-radius: 8px;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
           background: #F9FAFB;
-          height: 210px;
+          height: 190px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1213,7 +1211,7 @@ const SearchPage = () => {
           max-width: 100%;
           max-height: 100%;
           object-fit: contain;
-          padding: 8px;
+          padding: 6px;
         }
 
         .discount-badge {
@@ -1222,14 +1220,14 @@ const SearchPage = () => {
           left: 8px;
           background: #EF4444;
           color: #fff;
-          font-size: 11px;
+          font-size: 10.5px;
           font-weight: 700;
-          padding: 3px 8px;
+          padding: 3px 7px;
           border-radius: 4px;
         }
 
         .product-title {
-          font-size: 15px;
+          font-size: 14px;
           font-weight: 600;
           margin: 0 0 6px 0;
           color: #111827;
@@ -1244,11 +1242,11 @@ const SearchPage = () => {
           display: flex;
           flex-wrap: wrap;
           gap: 4px;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
         }
 
         .tag-material {
-          font-size: 11px;
+          font-size: 10.5px;
           color: #2563EB;
           background: #EFF6FF;
           padding: 2px 6px;
@@ -1257,7 +1255,7 @@ const SearchPage = () => {
         }
 
         .tag-size {
-          font-size: 11px;
+          font-size: 10.5px;
           color: #059669;
           background: #ECFDF5;
           padding: 2px 6px;
@@ -1269,18 +1267,18 @@ const SearchPage = () => {
           display: flex;
           align-items: center;
           gap: 6px;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
         }
 
         .rating-text {
-          font-size: 12px;
+          font-size: 11.5px;
           color: #4B5563;
           font-weight: 600;
         }
 
         .product-footer-info {
           border-top: 1px solid #F3F4F6;
-          padding-top: 10px;
+          padding-top: 8px;
         }
 
         .price-row {
@@ -1290,34 +1288,34 @@ const SearchPage = () => {
         }
 
         .current-price {
-          font-size: 18px;
+          font-size: 17px;
           font-weight: 700;
           color: #111827;
         }
 
         .original-price {
-          font-size: 12px;
+          font-size: 11.5px;
           color: #9CA3AF;
           text-decoration: line-through;
         }
 
         .delivery-info {
-          font-size: 12px;
+          font-size: 11.5px;
           color: #10B981;
           font-weight: 600;
-          margin: 4px 0 0 0;
+          margin: 3px 0 0 0;
         }
 
         .no-products-found {
           grid-column: 1 / -1;
           text-align: center;
-          padding: 50px;
+          padding: 40px;
           background: #fff;
           border-radius: 10px;
         }
 
         .no-products-found p {
-          font-size: 16px;
+          font-size: 15px;
           color: #6B7280;
           margin: 0;
         }
@@ -1328,7 +1326,13 @@ const SearchPage = () => {
           100% { opacity: 0.5; transform: scale(0.98); }
         }
 
+        /* --- MEDIA QUERIES FOR PERFECT MOBILE RESPONSIVENESS --- */
         @media (max-width: 992px) {
+          .search-page-container {
+            padding: 10px;
+            margin-top: 75px;
+          }
+
           .main-content-layout {
             flex-direction: column;
           }
@@ -1337,12 +1341,13 @@ const SearchPage = () => {
             position: fixed;
             top: 0;
             left: -100%;
-            width: 300px;
+            width: 280px;
             height: 100vh;
             z-index: 10000;
             transition: left 0.3s ease-in-out;
             max-height: 100vh;
             border-radius: 0;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.15);
           }
 
           .sidebar-filters.mobile-active {
@@ -1359,6 +1364,43 @@ const SearchPage = () => {
 
           .pdp-grid {
             flex-direction: column;
+            gap: 20px;
+          }
+
+          .pdp-image-section {
+            flex-direction: column-reverse; /* Mobile par thumbnails main image ke neeche ya upar achhi lagegi */
+            align-items: center;
+          }
+
+          .pdp-thumbnails {
+            flex-direction: row;
+            overflow-x: auto;
+            width: 100%;
+            padding-bottom: 5px;
+          }
+
+          .thumb-img {
+            width: 50px;
+            height: 50px;
+            flex-shrink: 0;
+          }
+
+          .pdp-main-image-box {
+            width: 100%;
+            height: 300px;
+          }
+          
+          .products-responsive-grid {
+            grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+            gap: 10px;
+          }
+
+          .product-card {
+            padding: 10px;
+          }
+
+          .product-image-container {
+            height: 150px;
           }
         }
       `}</style>
@@ -1370,13 +1412,64 @@ const SearchPage = () => {
 export default SearchPage;
 // import React, { useState, useEffect, useMemo } from 'react';
 // import { useSearchParams } from 'react-router-dom';
+// import CartModal from './cartmodel';
 
 // const SearchPage = () => {
+  
 //   const [searchParams] = useSearchParams();
 //   const query = searchParams.get('q') || '';
 
 //   const [products, setProducts] = useState([]);
 //   const [loading, setLoading] = useState(true);
+
+//   // --- Cart & Navbar Live Count State (LocalStorage Sync) ---
+//   const [cartItems, setCartItems] = useState([]);
+//   const [showCartModal, setShowCartModal] = useState(false);
+
+//   useEffect(() => {
+    
+//     const savedCart = JSON.parse(localStorage.getItem('trendnova_cart')) || [];
+//     setCartItems(savedCart);
+//   }, []);
+
+//   // --- Auto Scroll to Top on Page Load or Query Change ---
+//   useEffect(() => {
+//     window.scrollTo(0, 0);
+//   }, [query]);
+
+//   // Add to Cart Function (Updates LocalStorage & Cart Badge)
+//   const handleAddToCart = (product) => {
+//     let updatedCart = JSON.parse(localStorage.getItem('trendnova_cart')) || [];
+    
+//     // Check karo ki kya yeh product pehle se cart mein hai ya nahi (_id ya id se)
+//     const existingIndex = updatedCart.findIndex(item => (item._id || item.id) === (product._id || product.id));
+
+//     if (existingIndex > -1) {
+//       // Agar pehle se hai, toh naya item add karne ki jagah bas quantity 1 badha do
+//       updatedCart[existingIndex].quantity = (updatedCart[existingIndex].quantity || 1) + 1;
+//     } else {
+//       // Agar pehle se nahi hai, toh pehli baar quantity 1 ke sath add karo
+//       updatedCart.push({ ...product, quantity: 1 });
+//     }
+
+//     // LocalStorage mein save kar do
+//     localStorage.setItem('trendnova_cart', JSON.stringify(updatedCart));
+    
+//   };
+//   // const handleAddToCart = (product) => {
+//   //   let updatedCart = [...cartItems];
+//   //   const existingIndex = updatedCart.findIndex(item => (item._id || item.id) === (product._id || product.id));
+
+//   //   if (existingIndex > -1) {
+//   //     updatedCart[existingIndex].quantity = (updatedCart[existingIndex].quantity || 1) + 1;
+//   //   } else {
+//   //     updatedCart.push({ ...product, quantity: 1 });
+//   //   }
+
+//   //   setCartItems(updatedCart);
+//   //   localStorage.setItem('trendnova_cart', JSON.stringify(updatedCart));
+//   //   alert(`🛒 "${product.name}" added to Cart successfully!`);
+//   // };
 
 //   // --- Selected Product State for Detail View (PDP) ---
 //   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -1558,10 +1651,83 @@ export default SearchPage;
 //     setCommentsList([...commentsList, { user: 'You (Customer)', text: userComment }]);
 //     setUserComment('');
 //   };
+//   // --- RAZORPAY BUY NOW PAYMENT FUNCTION ---
+//   const handleBuyNow = async (product) => {
+//     try {
+//       // 1. Backend se Order ID mangwao
+//       const response = await fetch('https://trend-nova-product-api-2.onrender.com/api/payment/create-order', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ amount: product.price })
+//       });
+//       const order = await response.json();
+
+//       if (!order.id) {
+//         alert("Order create karne mein error aaya!");
+//         return;
+//       }
+
+//       // 2. Razorpay Options Set Karo
+//       const options = {
+//         key: "rzp_test_TxcEh6GfO2ErwY", // Teri Test Key ID
+//         amount: order.amount,
+//         currency: "INR",
+//         name: "TrendNova Store",
+//         description: `Purchase of ${product.name}`,
+//         order_id: order.id,
+//         handler: function (response) {
+//           alert("✅ Payment Successful! Payment ID: " + response.razorpay_payment_id);
+//           console.log("Payment Response:", response);
+//           // Payment successful hone par chahe toh cart mein bhi add karke modal khol sakta hai
+//         },
+//         prefill: {
+//           name: "Suraj Kumar",
+//           email: "suraj@gmail.com",
+//           contact: "9999999999"
+//         },
+//         theme: {
+//           color: "#db2777"
+//         }
+//       };
+
+//       const rzp = new window.Razorpay(options);
+//       rzp.open();
+
+//     } catch (error) {
+//       console.error("Payment error:", error);
+//       alert("Payment initiate nahi ho payi!");
+//     }
+//   };
 
 //   return (
 //     <div className="search-page-container">
       
+//       {/* --- YOUR EXACT NAVBAR CART SNIPPET WITH DYNAMIC LIVE COUNT --- */}
+//       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15px' }}>
+//         <span 
+//           onClick={() => setShowCartModal(true)} 
+//           className="action-item cart-wrapper" 
+//           title="View Cart" 
+//           style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', background: '#fff', padding: '8px 14px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+//         >
+//           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+//           </svg>
+//           <span className="cart-badge" style={{ marginLeft: '6px', fontWeight: 'bold', color: '#db2777' }}>
+//             {cartItems.reduce((total, item) => total + (item.quantity || 1), 0)}
+//           </span>
+//         </span>
+//       </div>
+
+//       {/* --- CART MODAL POPUP (AMAZON/FLIPKART STYLE) --- */}
+//       {showCartModal && (
+//         <CartModal 
+//           cartItems={cartItems} 
+//           setCartItems={setCartItems} 
+//           onClose={() => setShowCartModal(false)} 
+//         />
+//       )}
+
 //       {/* --- PERFECTLY CENTERED & RESPONSIVE TRENDNOVA LOADER --- */}
 //       {loading && (
 //         <div className="loading-overlay">
@@ -1611,7 +1777,7 @@ export default SearchPage;
 //               <h1 className="pdp-product-title">{selectedProduct.name}</h1>
               
 //               <div className="pdp-rating-row">
-//                 <span style={{ color: '#F59E0B' }}>{'★'.repeat(Math.floor(selectedProduct.rating || 4))}</span>
+//                 <span style={{ color: '#105099' }}>{'★'.repeat(Math.floor(selectedProduct.rating || 4))}</span>
 //                 <span className="pdp-rating-count">{selectedProduct.rating || '4.3'} Rating & Verified Reviews</span>
 //               </div>
 
@@ -1631,19 +1797,22 @@ export default SearchPage;
 //               <div className="pdp-actions-row">
 //                 <button 
 //                   className="pdp-add-cart-btn"
-//                   onClick={() => alert(`🛒 "${selectedProduct.name}" added to Cart successfully!`)}
+//                   onClick={() => handleAddToCart(selectedProduct)}
 //                 >
 //                   Add to Cart
 //                 </button>
-//                 <button 
-//                   className="pdp-buy-now-btn"
-//                   onClick={() => alert(`⚡ Redirecting to Secure Checkout for "${selectedProduct.name}"...`)}
-//                 >
-//                   Buy Now
-//                 </button>
+//                <button 
+//   className="pdp-buy-now-btn"
+//   onClick={() => handleBuyNow(selectedProduct)}
+// >
+//   Buy Now
+// </button>
 //               </div>
 //             </div>
 //           </div>
+
+
+          
 
 //           {/* --- CUSTOMER COMMENTS & REVIEWS SECTION --- */}
 //           <div className="pdp-comments-section">
@@ -2134,7 +2303,7 @@ export default SearchPage;
 
 //         .pdp-add-cart-btn {
 //           flex: 1;
-//           background: #F59E0B;
+//           background: #db2777;
 //           color: #fff;
 //           border: none;
 //           padding: 14px;
@@ -2146,7 +2315,7 @@ export default SearchPage;
 
 //         .pdp-buy-now-btn {
 //           flex: 1;
-//           background: #F97316;
+//           background: #1e3c9e;
 //           color: #fff;
 //           border: none;
 //           padding: 14px;
