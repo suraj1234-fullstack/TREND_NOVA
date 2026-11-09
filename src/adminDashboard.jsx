@@ -370,7 +370,7 @@ const AdminDashboard = () => {
             <div className="toolbar-box">
               <input 
                 type="text" 
-                placeholder="🔍 Search products..." 
+                placeholder=" Search products..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="search-input"
@@ -383,7 +383,124 @@ const AdminDashboard = () => {
               </select>
             </div>
 
-            {showAddModal && (
+{showAddModal && (
+  <div className="professional-add-product-container">
+    <div className="add-product-header-bar">
+      <div>
+        <h2>Product Listing</h2>
+        <p>Add some product and go to live..</p>
+      </div>
+      <button onClick={() => setShowAddModal(false)} className="btn-close-pane">✕ Cancel / Close</button>
+    </div>
+
+    <form onSubmit={handleAddProductSubmit} className="professional-product-form">
+      
+      {/* Section 1: Basic Information */}
+      <div className="form-section-card">
+        <h3>1. Basic Product Information</h3>
+        <div className="form-group full-width-group">
+          <label>Product Title / Name *</label>
+          <input 
+            type="text" 
+            required 
+            placeholder="Your Product Name" 
+            value={formData.name} 
+            onChange={(e) => setFormData({...formData, name: e.target.value})} 
+          />
+        </div>
+        
+        <div className="form-row">
+          <div className="form-group">
+            <label>Category *</label>
+            <input 
+              type="text" 
+              required 
+              placeholder="Men / Women / Electronics" 
+              value={formData.category} 
+              onChange={(e) => setFormData({...formData, category: e.target.value})} 
+            />
+          </div>
+          <div className="form-group">
+            <label>SubCategory / Type *</label>
+            <input 
+              type="text" 
+              required 
+              placeholder="Hoodies / Sneakers / Smartwatches" 
+              value={formData.subCategory} 
+              onChange={(e) => setFormData({...formData, subCategory: e.target.value})} 
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Section 2: Pricing & SEO Tags */}
+      <div className="form-section-card">
+        <h3>2. Pricing & Tags</h3>
+        <div className="form-row">
+          <div className="form-group">
+            <label>Selling Price (₹) *</label>
+            <input 
+              type="number" 
+              required 
+              placeholder="e.g. 1499" 
+              value={formData.price} 
+              onChange={(e) => setFormData({...formData, price: e.target.value})} 
+            />
+          </div>
+          
+          
+        </div>
+      </div>
+
+      {/* Section 3: High-Res Media & Banner */}
+      <div className="form-section-card">
+        <h3>3. Product Media & Banner</h3>
+        <div className="form-group full-width-group">
+          <label className="file-label">Upload Product Image *</label>
+          <input 
+            type="file" 
+            accept="image/*" 
+            required 
+            onChange={handleImageSelect} 
+            className="file-input" 
+          />
+          <div className={`file-status ${formData.image ? 'success' : 'error'}`}>
+            {formData.image ? 'Image successfully uploaded' : 'Upload clear product image (PNG, JPG, JPEG)'}
+          </div>
+          {formData.image && (
+            <div className="image-preview-box">
+              <img src={formData.image} alt="Preview" className="preview-thumb" />
+              <span className="preview-text">Preview Loaded Successfully</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="form-actions-bar">
+        <button type="button" onClick={() => setShowAddModal(false)} className="btn-cancel-large">Discard</button>
+        <button type="submit" className="btn-save-large">Publish Product Live <i class="fa-solid fa-angle-right"></i></button>
+      </div>
+
+    </form>
+  </div>
+)}
+
+
+              
+
+              {/* <div className="form-group">
+                        <label>Search Tags & Keywords (Comma separated)</label>
+                        <input 
+                          type="text" 
+                          placeholder="e.g. winter, casual, trending, hoodie" 
+                          value={formData.tags} 
+                          onChange={(e) => setFormData({...formData, tags: e.target.value})} 
+                        />
+                        <small style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '3px' }}>Help customers discover your item easily via search bar.</small>
+                      </div> */}
+
+            {/* {showAddModal && (
               <div className="modal-overlay">
                 <div className="modal-card">
                   <h3>Add New Product</h3>
@@ -426,7 +543,7 @@ const AdminDashboard = () => {
                   </form>
                 </div>
               </div>
-            )}
+            )} */}
 
             {loading ? (
               <div className="loading-state">Loading products...</div>
@@ -530,7 +647,7 @@ const AdminDashboard = () => {
               {coupons.map((coupon) => (
                 <div key={coupon.id} className="admin-product-card-item" style={{ justifyContent: 'space-between' }}>
                   <div>
-                    <h4 style={{ color: '#db2777', fontSize: '16px', marginBottom: '4px' }}>🏷️ {coupon.code}</h4>
+                    <h4 style={{ color: '#db2777', fontSize: '16px', marginBottom: '4px' }}><i class="fa-solid fa-tag"></i> {coupon.code}</h4>
                     <p className="card-meta"><b>Discount:</b> Flat {coupon.discount}% OFF</p>
                     <span className="role-badge admin" style={{ marginTop: '6px', display: 'inline-block' }}>{coupon.status}</span>
                   </div>
@@ -624,7 +741,7 @@ const AdminDashboard = () => {
         .mobile-brand { display: flex; align-items: center; gap: 10px; font-size: 15px; }
         .mobile-menu-toggle, .theme-toggle-btn {
           background: #db2777; color: #fff; border: none;
-          padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer;
+          padding: 6px 12px; border-radius: 6px; font-weight: 800; cursor: pointer;
         }
 
         .admin-sidebar {
@@ -762,7 +879,7 @@ const AdminDashboard = () => {
         .form-group label { font-size: 12px; font-weight: 700; color: var(--text-muted); }
         .form-group input { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-size: 13px; box-sizing: border-box; outline: none; }
         .form-row { display: flex; gap: 10px; }
-        .file-label { color: #dc2626 !important; }
+        .file-label { color: #111111 !important; }
         .file-input { width: 100%; padding: 6px; font-size: 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-main); box-sizing: border-box; }
         .file-status { font-size: 11px; font-weight: 600; margin-top: 2px; }
         .file-status.success { color: #059669; }
@@ -785,6 +902,266 @@ const AdminDashboard = () => {
           .admin-main-content { margin-left: 0; width: 100vw; padding: 16px; padding-top: 75px; }
           .admin-mobile-header { display: flex; }
         }
+         /* --- Professional Flipkart/Amazon Style Add Product Form (Fully Responsive) --- */
+.professional-add-product-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  box-sizing: border-box;
+  animation: fadeIn 0.25s ease-in-out;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.add-product-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.add-product-header-bar h2 {
+  color: var(--text-main);
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 2px 0;
+}
+
+.add-product-header-bar p {
+  color: var(--text-muted);
+  font-size: 11.5px;
+  margin: 0;
+}
+
+.btn-close-pane {
+  background: #334155;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 11.5px;
+}
+
+.professional-product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-section-card {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 14px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.form-section-card h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #db2777;
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-row { 
+  display: flex; 
+  gap: 12px; 
+  flex-wrap: wrap; 
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 4px; 
+  flex: 1; 
+  min-width: 220px; 
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.form-group.full-width-group {
+  flex: 100%;
+  min-width: 100%;
+}
+
+.form-group label { 
+  font-size: 11.5px; 
+  font-weight: 700; 
+  color: var(--text-muted); 
+}
+
+.form-group input, 
+.file-input { 
+  width: 100%; 
+  padding: 9px 11px; 
+  border-radius: 6px; 
+  border: 1px solid var(--border-color); 
+  background: var(--bg-card); 
+  color: var(--text-main); 
+  font-size: 13px; 
+  box-sizing: border-box; 
+  outline: none; 
+}
+
+.tag-input-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tag-add-btn {
+  background: #db2777;
+  color: #fff;
+  border: none;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.tag-chips-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.tag-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 3px 8px;
+  border-radius: 16px;
+  font-size: 11.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #db2777;
+  font-weight: 600;
+}
+
+.tag-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #dc2626;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 0;
+}
+
+.tag-helper-text {
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 3px;
+  display: block;
+}
+
+.image-preview-box {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.preview-thumb {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.preview-text {
+  font-size: 11.5px;
+  color: #059669;
+  font-weight: 650;
+}
+
+.form-actions-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 2px solid var(--border-color);
+  padding-top: 14px;
+  flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.btn-cancel-large {
+  padding: 9px 18px;
+  background: #334155;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 12px;
+  flex: 1;
+  max-width: 120px;
+}
+
+.btn-save-large {
+  padding: 9px 20px;
+  background: #059669;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 12px;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2);
+  
+}
+
+/* Mobile Extra Fixes for full width */
+@media (max-width: 768px) {
+  .professional-add-product-container {
+    padding: 12px;
+    margin: 5px;
+    width: calc(100% - 10px);
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .form-group {
+    min-width: 100%;
+  }
+
+  .btn-cancel-large, .btn-save-large {
+    max-width: 100%;
+    flex: 100%;
+  }
+}
       `}</style>
     </div>
   );

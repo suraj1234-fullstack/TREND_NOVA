@@ -50,8 +50,7 @@ const SearchPage = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [userComment, setUserComment] = useState('');
   const [commentsList, setCommentsList] = useState([
-    { user: 'Aman Sharma', text: 'Amazing quality! Highly recommended.' },
-    { user: 'Priya Verma', text: 'Fast delivery and exact same product as shown.' }
+   
   ]);
 
   // --- Dynamic Filter States ---
@@ -424,7 +423,7 @@ const SearchPage = () => {
                 className="mobile-filter-btn"
                 onClick={() => setShowFiltersMobile(true)}
               >
-                ⚙️ Filters
+                <i class="fa-solid fa-sliders"></i> Filters
               </button>
 
               <div className="sort-box">
@@ -1029,7 +1028,7 @@ const SearchPage = () => {
           color: #fff;
           border: none;
           border-radius: 8px;
-          font-weight: 600;
+          font-weight: 400;
           cursor: pointer;
         }
 

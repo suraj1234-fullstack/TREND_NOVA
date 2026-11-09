@@ -276,7 +276,7 @@ const CartModal = ({ onClose }) => {
           </div>
         ) : (
           <div className="empty-cart-container">
-            <div className="empty-cart-icon"><i class="fa-solid fa-basket-shopping"></i></div>
+            <div className="empty-cart-icon"><i class="fa-solid fa-bag-shopping"></i></div>
             <h2>Your Shopping Bag is Empty</h2>
             <p>Looks like you haven't added anything to your bag yet.</p>
             <button 
