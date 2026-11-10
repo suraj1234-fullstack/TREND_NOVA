@@ -5,6 +5,30 @@ import { Link } from 'react-router-dom';
 import CartModal from './cartmodel';
 
 const Navbar = ({ darkMode, setDarkMode }) => {
+
+
+
+  // 1. Placeholder ke alag-alag sentences ki list
+  const placeholders = [
+    "Search for  'Shoes' ",
+    "Search for 'Kitchen' ",
+    "Search for 'Tools' ",
+    "Search for 'Phone' ",
+    "Search for 'Electronics' "
+  ];
+
+  const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
+
+  // 2. Har 3 second mein text automatically change karne ke liye useEffect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
+    }, 2000); // 3000ms matlab 3 seconds
+
+    return () => clearInterval(timer);
+  }, []);
+
+
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showCartModal, setShowCartModal] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -506,7 +530,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
             <form onSubmit={handleSearchSubmit} className="search-group desktop-search">
               <input
                 type="text"
-                placeholder="Search for Products, Brands and More"
+                placeholder={placeholders[currentPlaceholderIndex]}
                 className="search-input-field"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -527,11 +551,11 @@ const [token, setToken] = useState(localStorage.getItem('token'));
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <span>Search</span>
+                
               </button>
             </form>
 
-            {/* --- CHHOTA SA DARK / LIGHT MODE TOGGLE BUTTON --- */}
+            {/* --- CHHOTA SA DARK / LIGHT MODE TOGGLE BUTTON ---
             <button
               onClick={() => setDarkMode(!darkMode)}
               className="theme-icon-btn"
@@ -542,7 +566,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
           color: darkMode ? '#ece6e6' : '#3d3b3b'}}
             >
               {darkMode ? <i class="fa-solid fa-sun"></i> : <i class="fa-solid fa-moon"></i>}
-            </button>
+            </button> */}
             {/* --- SIGN IN / PROFILE CONDITION --- */}
 {token ? (
   <div className="user-profile-container" style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
@@ -554,7 +578,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
-        padding: '9px 5px',
+        padding: '10px 5px',
         backgroundColor: darkMode ? '#1e293b' : '#f8f8f8',
         color: darkMode ? '#f472b6' : '#db2777',
         borderRadius: '20px',
@@ -587,15 +611,19 @@ const [token, setToken] = useState(localStorage.getItem('token'));
         gap: '8px'
       }}>
         
-        {/* User Info Section: ID/Name & Role */}
+       
         <div style={{ padding: '6px 8px', borderBottom: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`, fontSize: '12px', color: darkMode ? '#94a3b8' : '#64748b' }}>
           <div style={{ fontWeight: '700', color: darkMode ? '#f8fafc' : '#0f172a' }}>
             {localStorage.getItem('userName') || 'User Account'}
           </div>
-          <div style={{ fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>
+          {/* <div style={{ fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }}>
             Role: <span style={{ textTransform: 'uppercase', fontWeight: 'bold', color: '#db2777' }}>{role || 'user'}</span>
-          </div>
+            
+          </div> */}
+          
         </div>
+
+        
 
         {/* Admin Dashboard Access (Only if Admin) */}
         {role === 'admin' && (
@@ -619,6 +647,37 @@ const [token, setToken] = useState(localStorage.getItem('token'));
             <span>Admin Dashboard</span>
           </Link>
         )}
+<button
+  onClick={() => setDarkMode(!darkMode)}
+  className="dropdown-theme-toggle-btn"
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: '10px 14px',
+    backgroundColor: darkMode ? '#1e293b' : '#f8fafc',
+    color: darkMode ? '#ece6e6' : '#334155',
+    border: '1px solid',
+    borderColor: darkMode ? '#334155' : '#e2e8f0',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    margin: '6px 0',
+    transition: 'all 0.2s ease'
+  }}
+>
+  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    {darkMode ? <i className="fa-solid fa-sun" style={{ color: '#ebeaea' }}></i> : <i className="fa-solid fa-moon" style={{ color: '#475569' }}></i>}
+    <span>{darkMode ? "Light Mode" : "Dark Mode"}</span>
+  </span>
+  <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', background: darkMode ? '#334155' : '#e2e8f0' }}>
+    {darkMode ? 'ON' : 'OFF'}
+  </span>
+</button>
+        
+            
 
         {/* Logout Option */}
         <button 
@@ -727,7 +786,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
           <form onSubmit={handleSearchSubmit} className="search-group mobile-always-search">
             <input
               type="text"
-              placeholder="Search products & brands..."
+              placeholder={placeholders[currentPlaceholderIndex]}
               className="search-input-field"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -901,13 +960,13 @@ const [token, setToken] = useState(localStorage.getItem('token'));
         * { box-sizing: border-box; }
         
         body {
-          padding-top: 80px;
+          padding-top: 50px;
         }
-        // @media (max-width: 980px) {
-        //   body {
-        //     padding-top: 125px;
-        //   }
-        // }
+         @media (max-width: 980px) {
+          body {
+           padding-top: 90px;
+          }
+        }
 
         .navbar {
           position: fixed;
@@ -915,7 +974,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
           left: 0;
           right: 0;
           width: 100%;
-          color: #0f172a;
+          color: #3d3f41;
           box-shadow: 0 2px 14px rgba(15, 23, 42, 0.07);
           z-index: 1000;
           font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -981,7 +1040,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
           font-family: inherit;
           font-size: 13px;
           line-height: 1;
-          font-weight: 650;
+          
           text-align: center;
           white-space: nowrap;
           cursor: pointer;
@@ -1134,7 +1193,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
           background: transparent;
           color: #0f172a;
           font-family: inherit;
-          font-size: 12px;
+          font-size: 15px;
           line-height: 1.4;
         }
         .search-input-field::placeholder { color: #94a3b8; }
@@ -1258,10 +1317,10 @@ const [token, setToken] = useState(localStorage.getItem('token'));
 
         .sub-categories-bar {
           width: 100%;
-          background: rgba(225, 184, 233, 0.7);
+        
           backdrop-filter: blur(8px);
           padding: 15px 16px;
-          border-top: 1px solid rgba(226, 232, 240, 0.5);
+          border-top: 1px solid rgba(200, 204, 209, 0.5);
           border-bottom: 1px solid rgba(226, 232, 240, 0.7);
           overflow-x: auto;
           white-space: nowrap;
@@ -1302,7 +1361,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
           align-items: center;
           justify-content: center;
           margin-bottom: 2px;
-          border: 1px solid rgba(226, 232, 240, 0.8);
+          
           opacity: 1;
           transform: scale(1);
           max-height: 40px;
@@ -1310,7 +1369,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
           transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .sub-cat-emoji {
-          font-size: 14px;
+          font-size: 24px;
           transition: opacity 0.2s ease;
         }
         .sub-cat-name {
@@ -1398,7 +1457,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
             padding: 0 14px 8px;
             border-bottom: 1px solid #f1f5f9;
           }
-          .mobile-always-search { width: 100%; min-height: 38px; min-width: 300px !important;}
+          .mobile-always-search { width: 100%; min-height: 45px; min-width: 300px !important;}
           .mobile-always-search .search-submit-btn { min-width: 32px; min-height: 30px; padding: 6px 8px; }
           .mobile-menu.open {
             display: block;
@@ -1435,7 +1494,7 @@ const [token, setToken] = useState(localStorage.getItem('token'));
             color: #0f172a;
             font-size: 14px;
             line-height: 1.4;
-            font-weight: 750;
+            font-weight: 500;
             cursor: pointer;
           }
           .mobile-accordion-body { padding: 8px 0 4px; }
@@ -1492,8 +1551,9 @@ const [token, setToken] = useState(localStorage.getItem('token'));
           }
         }
         @media (max-width: 420px) {
+           
           .nav-container { padding-right: 12px; padding-left: 12px; }
-          .nav-logo { font-size: 19px; }
+          .nav-logo { font-size: 30px; }
           .nav-actions { gap: 6px; }
           .theme-icon-btn { width: 32px; height: 32px; }
           .mobile-toggle { width: 35px; height: 35px; }
@@ -1502,6 +1562,11 @@ const [token, setToken] = useState(localStorage.getItem('token'));
         @media (prefers-reduced-motion: reduce) {
           .navbar *, .navbar *::before, .navbar *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
         }
+
+
+
+
+          
       `}</style>
     </>
   );

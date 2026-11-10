@@ -240,8 +240,8 @@ const HeroSection = () => {
   return (
     <div style={styles.mainWrapper}>
       {/* Top Discount Banner */}
-      <div style={styles.discountBanner} >
-        <span><strong>TrendNova Special Offer:</strong> Use Code <span style={styles.couponCode}>TREND30</span> & Get Flat 30% OFF!</span>
+      <div className= "hide-errows"  style={styles.discountBanner} >
+        <span><strong> Special Offer:</strong> Use Code <span style={styles.couponCode}>TREND30</span> Get Flat 10% OFF!</span>
       </div>
 
       {/* Hero Image Slider */}
@@ -292,7 +292,7 @@ const HeroSection = () => {
           <h2 style={styles.centeredHeading}>
             <span style={styles.sparkle}>✦</span> TOP TRENDS <span style={styles.sparkle}>✦</span>
           </h2>
-          <div style={styles.sectionNavButtons}>
+          <div className= "hide-errow" style={styles.sectionNavButtons}>
             <button onClick={() => scrollSection(topTrendsRef, 'left')} style={styles.secNavBtn}>❮</button>
             <button onClick={() => scrollSection(topTrendsRef, 'right')} style={styles.secNavBtn}>❯</button>
           </div>
@@ -322,7 +322,7 @@ const HeroSection = () => {
             <h2 style={styles.goldHeading}>
               <span style={styles.sparkleGold}>✦</span> FOOTWEAR & ACCESSORIES <span style={styles.sparkleGold}>✦</span>
             </h2>
-            <div style={styles.sectionNavButtons}>
+            <div className= "hide-errow" style={styles.sectionNavButtons}>
               <button onClick={() => scrollSection(footwearRef, 'left')} style={styles.secNavBtnGold}>❮</button>
               <button onClick={() => scrollSection(footwearRef, 'right')} style={styles.secNavBtnGold}>❯</button>
             </div>
@@ -350,7 +350,7 @@ const HeroSection = () => {
             <h2 style={styles.goldHeading}>
               <span style={styles.sparkleGold}>✦</span> ETHNICWEAR <span style={styles.sparkleGold}>✦</span>
             </h2>
-            <div style={styles.sectionNavButtons}>
+            <div className= "hide-errow" style={styles.sectionNavButtons}>
               <button onClick={() => scrollSection(ethnicRef, 'left')} style={styles.secNavBtnGold}>❮</button>
               <button onClick={() => scrollSection(ethnicRef, 'right')} style={styles.secNavBtnGold}>❯</button>
             </div>
@@ -378,7 +378,7 @@ const HeroSection = () => {
             <h2 style={styles.goldHeadingLarge}>
               <span style={styles.sparkleGold}>✦</span> KITCHEN & HOME ESSENTIALS <span style={styles.sparkleGold}>✦</span>
             </h2>
-            <div style={styles.sectionNavButtons}>
+            <div className= "hide-errow" style={styles.sectionNavButtons}>
               <button onClick={() => scrollSection(kitchenRef, 'left')} style={styles.secNavBtnGold}>❮</button>
               <button onClick={() => scrollSection(kitchenRef, 'right')} style={styles.secNavBtnGold}>❯</button>
             </div>
@@ -406,7 +406,7 @@ const HeroSection = () => {
             <h2 style={styles.goldHeadingLarge}>
               <span style={styles.sparkleGold}>✦</span> ELECTRONIC GADGETS <span style={styles.sparkleGold}>✦</span>
             </h2>
-            <div style={styles.sectionNavButtons}>
+            <div  className= "hide-errow" style={styles.sectionNavButtons}>
               <button onClick={() => scrollSection(gadgetsRef, 'left')} style={styles.secNavBtnGold}>❮</button>
               <button onClick={() => scrollSection(gadgetsRef, 'right')} style={styles.secNavBtnGold}>❯</button>
             </div>
@@ -512,7 +512,7 @@ const styles = {
   mainWrapper: {
     width: '100%',
     maxWidth: '1380px',
-    margin: '70px auto 10px auto',
+    margin: '100px auto 10px auto',
     padding: '0 8px',
   },
   discountBanner: {
@@ -521,7 +521,7 @@ const styles = {
     color: '#ffffff',
     textAlign: 'center',
     padding: '5px 10px',
-    fontSize: '12px',
+    fontSize: '15px',
     fontWeight: '500',
     borderRadius: '6px',
     fontFamily: "'Poppins', sans-serif",
@@ -920,6 +920,74 @@ const styles = {
     fontWeight: '600',
     color: '#64748b',
   }
+
+  
+  
 };
+
+// ================= MOBILE RESPONSIVE MEDIA QUERY =================
+const responsiveStyles = `
+ @media (max-width: 768px) {
+          .hide-errow {
+            display: none !important;
+          }
+        }
+           @media (max-width: 768px) {
+          .hide-errows {
+              font-size: 10px !important;
+          }
+        }
+  @media (max-width: 768px) {
+    /* 1. Mobile par Top Trends / Footwear ke arrow buttons ko hide karne ke liye */
+    div[style*="justifyContent: 'center'"] button,
+    div[style*="display: 'flex'"][style*="justifyContent: 'space-between'"] button,
+    button[style*="backgroundColor: 'rgba(180"] {
+      display: none !important;
+    }
+      
+      
+
+    /* 2. Top Trends Cards ka size mobile ke liye chota aur fit karne ke liye */
+    div[style*="minWidth: '150px'"] {
+      min-width: 110px !important;
+      max-width: 110px !important;
+    }
+    div[style*="position: 'relative'"][style*="height: '210px'"] {
+      height: 150px !important;
+    }
+
+    /* 3. Footwear & Ethnic Cards ka size chota karne ke liye */
+    div[style*="minWidth: '140px'"] {
+      min-width: 105px !important;
+      max-width: 105px !important;
+    }
+    div[style*="position: 'relative'"][style*="height: '190px'"] {
+      height: 140px !important;
+    }
+
+    /* 4. Kitchen & Gadgets (Large Cards) ka size mobile par fix karne ke liye */
+    div[style*="minWidth: '190px'"] {
+      min-width: 130px !important;
+      max-width: 130px !important;
+    }
+    div[style*="position: 'relative'"][style*="height: '250px'"] {
+      height: 170px !important;
+    }
+
+    /* Heading text size mobile par thoda balance karne ke liye */
+    h2 {
+      font-size: 13px !important;
+    }
+  }
+`;
+
+// Injecting style into document dynamically so you don't touch your main styles object
+if (typeof document !== 'undefined') {
+  const styleTag = document.createElement('style');
+  styleTag.innerHTML = responsiveStyles;
+  document.head.appendChild(styleTag);
+}
+
+
 
 export default HeroSection;

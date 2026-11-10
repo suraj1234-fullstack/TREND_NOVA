@@ -7,6 +7,10 @@ import Footersection from './components/footersection';
 import AIChatAssistant from './components/AIChatAssistant';
 import AdminDashboard from './adminDashboard';
 import { Navigate } from 'react-router-dom';
+import AppMenu from './components/AppMenu';
+
+
+
  const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
@@ -64,8 +68,9 @@ const App = () => {
               <Route path="/" element={<Herosection />} />
               <Route path="/search" element={<SearchPage />} />
             </Routes>
-
+              
             <Footersection />
+            <AppMenu/>
           </div>
         } />
       </Routes>
